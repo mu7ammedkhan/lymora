@@ -108,7 +108,7 @@ security definer
 set search_path = public
 as $$ select coalesce(private.current_role() in ('super_admin', 'academy_ops', 'assessor'), false) $$;
 
-create or replace function public.handle_new_auth_user()
+create or replace function private.handle_new_auth_user()
 returns trigger
 language plpgsql
 security definer
@@ -120,7 +120,7 @@ begin
     new.id,
     coalesce(new.raw_user_meta_data ->> 'full_name', split_part(new.email, '@', 1)),
     new.email,
-    coalesce((new.raw_user_meta_data ->> 'role')::public.app_role, 'candidate')
+    'candidate'
   );
   return new;
 end;
@@ -128,9 +128,9 @@ $$;
 
 create trigger on_auth_user_created
 after insert on auth.users
-for each row execute procedure public.handle_new_auth_user();
+for each row execute procedure private.handle_new_auth_user();
 
-create or replace function public.set_updated_at()
+create or replace function private.set_updated_at()
 returns trigger language plpgsql as $$
 begin
   new.updated_at = now();
@@ -139,9 +139,9 @@ end;
 $$;
 
 create trigger applications_set_updated_at before update on public.applications
-for each row execute procedure public.set_updated_at();
+for each row execute procedure private.set_updated_at();
 create trigger profiles_set_updated_at before update on public.profiles
-for each row execute procedure public.set_updated_at();
+for each row execute procedure private.set_updated_at();
 
 alter table public.profiles enable row level security;
 alter table public.applications enable row level security;
@@ -180,9 +180,32 @@ using (private.is_staff());
 create policy "staff write activities" on public.activities for insert to authenticated
 with check (private.is_staff());
 
+revoke all on function private.current_role() from public;
+revoke all on function private.is_staff() from public;
+revoke all on function private.handle_new_auth_user() from public;
+revoke all on function private.set_updated_at() from public;
+
 grant usage on schema private to authenticated;
 grant execute on function private.current_role() to authenticated;
 grant execute on function private.is_staff() to authenticated;
+
+grant select, insert, update, delete on table
+  public.profiles,
+  public.applications,
+  public.cohorts,
+  public.enrollments,
+  public.activities
+to authenticated;
+
+grant select, insert, update, delete on table
+  public.profiles,
+  public.applications,
+  public.cohorts,
+  public.enrollments,
+  public.activities
+to service_role;
+
+grant usage, select on sequence public.caio_application_number_seq to authenticated, service_role;
 
 comment on table public.applications is 'CAIO admissions records received from the public website and staff intake.';
 comment on table public.activities is 'Append-only operational audit events for Lymora OS.';

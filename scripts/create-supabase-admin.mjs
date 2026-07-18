@@ -14,8 +14,13 @@ const { data, error } = await supabase.auth.admin.createUser({
   email,
   password,
   email_confirm: true,
-  user_metadata: { full_name: "Lymora Administrator", role: "super_admin" },
+  user_metadata: { full_name: "Lymora Administrator" },
 });
 
 if (error) throw error;
+const { error: profileError } = await supabase
+  .from("profiles")
+  .update({ role: "super_admin" })
+  .eq("id", data.user.id);
+if (profileError) throw profileError;
 console.log(`Created Supabase administrator ${data.user.email}`);

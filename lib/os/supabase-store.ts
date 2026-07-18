@@ -131,9 +131,11 @@ export async function createSupabaseTeamMember(input: { name: string; email: str
   const client = createSupabaseAdminClient();
   const { data, error } = await client.auth.admin.createUser({
     email: input.email.toLowerCase(), password: input.password, email_confirm: true,
-    user_metadata: { full_name: input.name, role: input.role },
+    user_metadata: { full_name: input.name },
   });
   if (error || !data.user) throw new Error(error?.message || "Supabase could not create the user");
+  const { error: profileError } = await client.from("profiles").update({ role: input.role }).eq("id", data.user.id);
+  if (profileError) throw new Error(profileError.message);
   const { error: activityError } = await client.from("activities").insert({
     id: randomUUID(), actor_id: actorId, action: "user.created", entity_type: "user", entity_id: data.user.id,
     detail: `Created access for ${input.name}`, created_at: new Date().toISOString(),
