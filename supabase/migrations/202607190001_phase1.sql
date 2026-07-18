@@ -30,7 +30,7 @@ create table public.applications (
   email text not null,
   phone text not null,
   location text not null,
-  current_role text not null,
+  "current_role" text not null,
   industry text not null,
   experience text not null default 'Not provided',
   ai_level text not null default 'Not assessed',
@@ -92,7 +92,7 @@ create index applications_created_at_idx on public.applications(created_at desc)
 create index enrollments_cohort_idx on public.enrollments(cohort_id);
 create index activities_created_at_idx on public.activities(created_at desc);
 
-create or replace function private.current_role()
+create or replace function private.actor_role()
 returns public.app_role
 language sql
 stable
@@ -106,7 +106,7 @@ language sql
 stable
 security definer
 set search_path = public
-as $$ select coalesce(private.current_role() in ('super_admin', 'academy_ops', 'assessor'), false) $$;
+as $$ select coalesce(private.actor_role() in ('super_admin', 'academy_ops', 'assessor'), false) $$;
 
 create or replace function private.handle_new_auth_user()
 returns trigger
@@ -152,7 +152,7 @@ alter table public.activities enable row level security;
 create policy "profiles self or staff read" on public.profiles for select to authenticated
 using (id = auth.uid() or private.is_staff());
 create policy "super admins manage profiles" on public.profiles for all to authenticated
-using (private.current_role() = 'super_admin') with check (private.current_role() = 'super_admin');
+using (private.actor_role() = 'super_admin') with check (private.actor_role() = 'super_admin');
 
 create policy "staff read applications" on public.applications for select to authenticated
 using (private.is_staff());
@@ -180,13 +180,13 @@ using (private.is_staff());
 create policy "staff write activities" on public.activities for insert to authenticated
 with check (private.is_staff());
 
-revoke all on function private.current_role() from public;
+revoke all on function private.actor_role() from public;
 revoke all on function private.is_staff() from public;
 revoke all on function private.handle_new_auth_user() from public;
 revoke all on function private.set_updated_at() from public;
 
 grant usage on schema private to authenticated;
-grant execute on function private.current_role() to authenticated;
+grant execute on function private.actor_role() to authenticated;
 grant execute on function private.is_staff() to authenticated;
 
 grant select, insert, update, delete on table

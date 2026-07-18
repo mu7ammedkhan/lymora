@@ -1,9 +1,9 @@
 const supabaseUrl = () => process.env.NEXT_PUBLIC_SUPABASE_URL;
 const publishableKey = () => process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const serviceRoleKey = () => process.env.SUPABASE_SERVICE_ROLE_KEY;
+const secretKey = () => process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export function isSupabaseConfigured() {
-  return Boolean(supabaseUrl() && publishableKey() && serviceRoleKey());
+  return Boolean(supabaseUrl() && publishableKey() && secretKey());
 }
 
 export function wantsSupabase() {
@@ -19,8 +19,8 @@ export function getSupabasePublicConfig() {
 
 export function getSupabaseAdminConfig() {
   const { url } = getSupabasePublicConfig();
-  const key = serviceRoleKey();
-  if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is required on the server");
+  const key = secretKey();
+  if (!key) throw new Error("SUPABASE_SECRET_KEY is required on the server");
   return { url, key };
 }
 

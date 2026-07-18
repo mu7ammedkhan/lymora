@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { Activity, Application, Cohort, DatabaseSchema, Enrollment, Role, User } from "@/lib/os/types";
+import type { Database } from "@/lib/supabase/database.types";
 
 type Row = Record<string, unknown>;
+type TableName = keyof Database["public"]["Tables"];
 
 function profileToUser(row: Row): User {
   return {
@@ -108,10 +110,10 @@ export async function readSupabaseDatabase(): Promise<DatabaseSchema> {
   };
 }
 
-async function upsertRows(table: string, rows: Row[]) {
+async function upsertRows(table: TableName, rows: Row[]) {
   if (rows.length === 0) return;
   const client = createSupabaseAdminClient();
-  const { error } = await client.from(table).upsert(rows);
+  const { error } = await client.from(table).upsert(rows as never);
   if (error) throw new Error(`Supabase ${table} update failed: ${error.message}`);
 }
 

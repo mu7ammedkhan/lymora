@@ -17,13 +17,13 @@ The public website is available at `/` and Lymora OS at `/app`.
 ## Supabase production connection
 
 1. Create a Supabase project.
-2. Add its URL, publishable key and server-only service role key to `.env.local`.
+2. Add its URL, publishable key and server-only secret key to `.env.local`.
 3. Set `LYMORA_DATA_PROVIDER=supabase`.
-4. Apply `supabase/migrations/202607190001_phase1.sql` in the SQL Editor or with `supabase db push`.
+4. Apply every file in `supabase/migrations` in order, or run `supabase db push`.
 5. Set `LYMORA_ADMIN_EMAIL` and `LYMORA_ADMIN_PASSWORD`, then run `npm run supabase:admin`.
 6. Run `npm run supabase:migrate-local` once to import the current applications, cohorts and enrolments.
 
-Never expose `SUPABASE_SERVICE_ROLE_KEY` through a `NEXT_PUBLIC_` variable or commit `.env.local`.
+Never expose `SUPABASE_SECRET_KEY` through a `NEXT_PUBLIC_` variable or commit `.env.local`.
 
 Supabase mode provides managed authentication, PostgreSQL persistence and Row Level Security. Without configured Supabase variables, development automatically uses the ignored local data store.
 
