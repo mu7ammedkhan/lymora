@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
+import WebSocket from "ws";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const secretKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -9,7 +10,10 @@ if (!url || !secretKey) throw new Error("Supabase URL and secret key are require
 
 const localPath = path.join(process.cwd(), "data", "lymora-os.json");
 const local = JSON.parse(await readFile(localPath, "utf8"));
-const supabase = createClient(url, secretKey, { auth: { autoRefreshToken: false, persistSession: false } });
+const supabase = createClient(url, secretKey, {
+  auth: { autoRefreshToken: false, persistSession: false },
+  realtime: { transport: WebSocket },
+});
 
 const applicationRows = local.applications.map((item) => ({
   id: randomUUID(), application_number: item.number, full_name: item.fullName, email: item.email, phone: item.phone, location: item.location,

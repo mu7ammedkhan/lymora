@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import WebSocket from "ws";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const secretKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -9,7 +10,10 @@ if (!url || !secretKey || !email || !password) {
   throw new Error("Supabase URL, secret key, admin email and admin password are required in .env.local");
 }
 
-const supabase = createClient(url, secretKey, { auth: { autoRefreshToken: false, persistSession: false } });
+const supabase = createClient(url, secretKey, {
+  auth: { autoRefreshToken: false, persistSession: false },
+  realtime: { transport: WebSocket },
+});
 const { data, error } = await supabase.auth.admin.createUser({
   email,
   password,

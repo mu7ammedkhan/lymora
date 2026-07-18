@@ -1,13 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
-import type { Database } from "@/lib/supabase/database.types";
+import { nodeWebSocketTransport } from "@/lib/supabase/node-transport";
 
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
   const { url, key } = getSupabasePublicConfig();
 
-  return createServerClient<Database>(url, key, {
+  return createServerClient(url, key, {
+    realtime: { transport: nodeWebSocketTransport },
     cookies: {
       getAll() {
         return cookieStore.getAll();
