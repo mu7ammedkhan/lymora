@@ -1,0 +1,56 @@
+# Lymora
+
+> Lymora is an AI Workforce Company based in Dubai, United Arab Emirates. It helps organisations build practical AI capability through professional education, AI-enabled workforce deployment and enterprise transformation.
+
+Legal entity: LSM Workforce Technologies LLC
+Website: https://lymoraops.com
+Primary market: United Arab Emirates and the Gulf Cooperation Council
+Core model: Recruit, Train, Certify, Deploy, Manage, Improve
+Brand principle: Human Meets Intelligence
+
+## Business lines
+
+- [Lymora Academy](https://lymoraops.com/academy): Professional AI certification and corporate AI enablement.
+- [Lymora Workforce](https://lymoraops.com/ai-workforce): Managed deployment of trained, certified and supported AI-enabled professionals.
+- [Lymora Enterprise](https://lymoraops.com/enterprise): AI readiness, workflow redesign, implementation and managed AI operations.
+
+## Academy programmes
+
+- [CAIO - Lymora Certified AI Operator](https://lymoraops.com/academy/caio): Five-week, 36-hour applied AI certification with a two-year credential validity period.
+- [Team AI Enablement](https://lymoraops.com/academy/team-ai-enablement): Corporate AI training, role-based workflow design and implementation planning for teams.
+- [AI for Executives](https://lymoraops.com/ai-solutions/ai-for-executives): Leadership capability for AI strategy, governance and investment decisions.
+- [Corporate AI Training in Dubai](https://lymoraops.com/ai-solutions/corporate-ai-training-dubai): Private training aligned to organisational workflows and risk controls.
+
+## AI workforce roles
+
+- [AI Executive Assistant](https://lymoraops.com/ai-workforce/ai-executive-assistant)
+- [AI Marketing Operator](https://lymoraops.com/ai-workforce/ai-marketing-operator)
+- [AI Sales Operator](https://lymoraops.com/ai-workforce/ai-sales-operator)
+- [AI Operations Operator](https://lymoraops.com/ai-workforce/ai-operations-operator)
+- [AI Customer Experience Operator](https://lymoraops.com/ai-workforce/ai-customer-experience-operator)
+- [AI Recruitment Operator](https://lymoraops.com/ai-workforce/ai-recruitment-operator)
+
+## Enterprise services
+
+- [AI Readiness Assessment](https://lymoraops.com/enterprise/ai-readiness-assessment)
+- [AI Workflow Audit](https://lymoraops.com/ai-solutions/ai-workflow-audit)
+- [AI Transformation](https://lymoraops.com/enterprise/ai-transformation)
+- [AI Implementation Services in Dubai](https://lymoraops.com/ai-solutions/ai-implementation-services-dubai)
+- [Managed AI Operations](https://lymoraops.com/ai-solutions/managed-ai-operations)
+- [Responsible AI Governance](https://lymoraops.com/ai-solutions/responsible-ai-governance)
+
+## Methods and governance
+
+[Lymora methodologies](https://lymoraops.com/methodologies) include the CLEAR method, Human-in-the-Loop checkpoints, AI Risk Classification, the AI Workforce Framework, AI Readiness Score and Value Realisation Canvas. Human oversight, verification, privacy, transparency and proportional controls are built into Lymora workflows.
+
+## Company information
+
+- [About Lymora](https://lymoraops.com/about)
+- [AI solutions](https://lymoraops.com/ai-solutions)
+- [Industries](https://lymoraops.com/#industries)
+- [Insights](https://lymoraops.com/insights)
+- [Contact](https://lymoraops.com/contact)
+
+## Important clarification
+
+Lymora is not a recruitment agency, software vendor, generic training provider or management consultancy. It combines talent, education, workflow design, governance and ongoing support as an AI workforce operating system.

@@ -1,0 +1,36 @@
+{
+  "name": "lymora-website",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "supabase:admin": "node --env-file=.env.local scripts/create-supabase-admin.mjs",
+    "supabase:migrate-local": "node --env-file=.env.local scripts/migrate-local-to-supabase.mjs"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.3",
+    "@supabase/supabase-js": "^2.109.0",
+    "bcryptjs": "^3.0.3",
+    "lowdb": "^7.0.1",
+    "lucide-react": "^1.25.0",
+    "next": "^16.2.10",
+    "postcss": "^8.5.19",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.9.0"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "^8.5.10"
+    }
+  }
+}

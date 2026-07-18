@@ -1,0 +1,11 @@
+node_modules
+node_modules.*
+.next
+out
+.env*
+!.env.example
+.DS_Store
+*.log
+data/*.json
+data/*.tmp
+package-lock.internal-mirror.json
