@@ -9,6 +9,8 @@ const topics = [
   "Enterprise AI transformation",
 ];
 
+const whatsappNumber = "971525295577";
+
 function WhatsAppIcon({ size = 24 }: { size?: number }) {
   return (
     <svg aria-hidden="true" width={size} height={size} viewBox="0 0 32 32" fill="none">
@@ -23,12 +25,10 @@ function WhatsAppIcon({ size = 24 }: { size?: number }) {
 export function WhatsAppSupport() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("Hi Lymora, I would like to discuss ");
-  const number = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "").replace(/\D/g, "");
 
   const whatsappUrl = useMemo(() => {
-    const destination = number ? `/${number}` : "/";
-    return `https://wa.me${destination}?text=${encodeURIComponent(message.trim())}`;
-  }, [message, number]);
+    return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message.trim())}`;
+  }, [message]);
 
   useEffect(() => {
     if (!open) return;
