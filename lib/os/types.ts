@@ -180,11 +180,134 @@ export type Credential = {
   createdAt: string;
 };
 
+export type CorporateAccountStatus = "prospect" | "active" | "client" | "inactive";
+export type OpportunityStage = "lead" | "qualified" | "diagnosis" | "proposal" | "proof" | "won" | "lost";
+export type CorporatePackage = "team_enablement_15" | "team_enablement_30" | "private_caio" | "enterprise";
+export type AiMaturityLevel = "emerging" | "developing" | "ready" | "leading";
+export type AiRiskLevel = "green" | "amber" | "red";
+
+export type CorporateAccount = {
+  id: string;
+  companyName: string;
+  website: string;
+  industry: string;
+  employeeBand: string;
+  location: string;
+  primaryContactName: string;
+  primaryContactEmail: string;
+  primaryContactPhone: string;
+  primaryContactTitle: string;
+  ownerId: string | null;
+  source: string;
+  status: CorporateAccountStatus;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CorporateOpportunity = {
+  id: string;
+  accountId: string;
+  title: string;
+  package: CorporatePackage;
+  participantCount: number;
+  stage: OpportunityStage;
+  valueAed: number;
+  probability: number;
+  expectedCloseDate: string | null;
+  nextStep: string;
+  nextStepDueAt: string | null;
+  ownerId: string | null;
+  lostReason: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ReadinessAssessment = {
+  id: string;
+  opportunityId: string;
+  status: "draft" | "completed";
+  respondentName: string;
+  leadershipScore: number;
+  peopleScore: number;
+  processScore: number;
+  dataScore: number;
+  toolsScore: number;
+  governanceScore: number;
+  adoptionScore: number;
+  overallScore: number;
+  maturity: AiMaturityLevel;
+  executiveSummary: string;
+  priorities: string;
+  risks: string;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WorkflowOpportunity = {
+  id: string;
+  readinessAssessmentId: string;
+  workflowName: string;
+  department: string;
+  currentPain: string;
+  frequency: string;
+  valueScore: number;
+  feasibilityScore: number;
+  riskLevel: AiRiskLevel;
+  humanOversight: string;
+  recommendation: string;
+  priority: number;
+  createdAt: string;
+};
+
+export type CorporateProposal = {
+  id: string;
+  opportunityId: string;
+  proposalNumber: string;
+  package: CorporatePackage;
+  participantCount: number;
+  subtotalAed: number;
+  vatRate: number;
+  vatAed: number;
+  totalAed: number;
+  scope: string;
+  timeline: string;
+  assumptions: string;
+  status: "draft" | "sent" | "accepted" | "declined" | "expired";
+  validUntil: string;
+  sentAt: string | null;
+  acceptedAt: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CorporateWorkshop = {
+  id: string;
+  opportunityId: string;
+  proposalId: string | null;
+  title: string;
+  workshopType: "executive_readiness" | "team_enablement" | "manager_coaching" | "workflow_lab";
+  startsAt: string;
+  endsAt: string;
+  deliveryMode: "live_online" | "in_person" | "hybrid";
+  location: string;
+  joinUrl: string;
+  status: "planned" | "confirmed" | "completed" | "cancelled";
+  facilitator: string;
+  participantTarget: number;
+  outcomes: string;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Activity = {
   id: string;
   actorId: string | null;
   action: string;
-  entityType: "application" | "cohort" | "enrollment" | "session" | "user" | "assessment" | "credential";
+  entityType: "application" | "cohort" | "enrollment" | "session" | "user" | "assessment" | "credential" | "account" | "opportunity" | "diagnostic" | "proposal" | "workshop";
   entityId: string;
   detail: string;
   createdAt: string;
@@ -204,6 +327,12 @@ export type DatabaseSchema = {
   assessmentSubmissions: AssessmentSubmission[];
   assessmentResults: AssessmentResult[];
   credentials: Credential[];
+  corporateAccounts: CorporateAccount[];
+  corporateOpportunities: CorporateOpportunity[];
+  readinessAssessments: ReadinessAssessment[];
+  workflowOpportunities: WorkflowOpportunity[];
+  corporateProposals: CorporateProposal[];
+  corporateWorkshops: CorporateWorkshop[];
   activities: Activity[];
 };
 

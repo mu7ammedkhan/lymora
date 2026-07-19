@@ -11,8 +11,11 @@ import { applicationStatuses } from "@/lib/os/types";
 import { createSupabaseTeamMember, setSupabaseUserStatus } from "@/lib/os/supabase-store";
 import { wantsSupabase } from "@/lib/supabase/config";
 import { getAssessmentSummary } from "@/lib/os/academy";
+import { calculateProposal, calculateReadiness, corporatePackages, opportunityStages, standardProposalScope } from "@/lib/os/corporate";
+import type { CorporatePackage } from "@/lib/os/types";
 
 const staffRoles = ["super_admin", "academy_ops", "assessor"] as const;
+const corporateRoles = ["super_admin", "academy_ops"] as const;
 
 export async function updateApplicationAction(formData: FormData) {
   const user = await requireRole([...staffRoles]);
@@ -325,4 +328,203 @@ export async function issueCredentialAction(formData: FormData) {
   revalidatePath(`/app/cohorts/${parsed.data.cohortId}/assessment`);
   revalidatePath(`/app/cohorts/${parsed.data.cohortId}/assessment/${parsed.data.enrollmentId}`);
   revalidatePath("/app/learning");
+}
+
+export async function createCorporateOpportunityAction(formData: FormData) {
+  const user = await requireRole([...corporateRoles]);
+  const parsed = z.object({
+    companyName: z.string().min(2).max(160), website: z.union([z.literal(""), z.string().url()]), industry: z.string().min(2).max(100),
+    employeeBand: z.string().min(1).max(50), location: z.string().min(2).max(100), contactName: z.string().min(2).max(120),
+    contactEmail: z.string().email(), contactPhone: z.string().max(40).optional(), contactTitle: z.string().max(100).optional(),
+    source: z.string().min(2).max(100), title: z.string().min(3).max(180), package: z.enum(["team_enablement_15", "team_enablement_30", "private_caio", "enterprise"]),
+    participantCount: z.coerce.number().int().min(1).max(10000), valueAed: z.coerce.number().min(0).max(100_000_000).optional(),
+    expectedCloseDate: z.string().optional(), nextStep: z.string().min(3).max(500), nextStepDueAt: z.string().optional(), notes: z.string().max(4000).optional(),
+  }).safeParse({ ...Object.fromEntries(formData), valueAed: formData.get("valueAed") || undefined });
+  if (!parsed.success) return;
+  const accountId = randomUUID();
+  const opportunityId = randomUUID();
+  const now = new Date().toISOString();
+  const packagePrice = corporatePackages[parsed.data.package].price;
+  const valueAed = parsed.data.package === "enterprise" ? parsed.data.valueAed ?? 0 : packagePrice;
+  await updateDatabase((database) => {
+    database.corporateAccounts.push({
+      id: accountId, companyName: parsed.data.companyName, website: parsed.data.website, industry: parsed.data.industry,
+      employeeBand: parsed.data.employeeBand, location: parsed.data.location, primaryContactName: parsed.data.contactName,
+      primaryContactEmail: parsed.data.contactEmail.toLowerCase(), primaryContactPhone: parsed.data.contactPhone ?? "",
+      primaryContactTitle: parsed.data.contactTitle ?? "", ownerId: user.id, source: parsed.data.source, status: "prospect",
+      notes: parsed.data.notes ?? "", createdAt: now, updatedAt: now,
+    });
+    database.corporateOpportunities.push({
+      id: opportunityId, accountId, title: parsed.data.title, package: parsed.data.package, participantCount: parsed.data.participantCount,
+      stage: "lead", valueAed, probability: 10, expectedCloseDate: parsed.data.expectedCloseDate || null, nextStep: parsed.data.nextStep,
+      nextStepDueAt: parsed.data.nextStepDueAt || null, ownerId: user.id, lostReason: "", createdAt: now, updatedAt: now,
+    });
+    database.readinessAssessments.push({
+      id: randomUUID(), opportunityId, status: "draft", respondentName: "", leadershipScore: 0, peopleScore: 0, processScore: 0,
+      dataScore: 0, toolsScore: 0, governanceScore: 0, adoptionScore: 0, overallScore: 0, maturity: "emerging",
+      executiveSummary: "", priorities: "", risks: "", completedAt: null, createdAt: now, updatedAt: now,
+    });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "opportunity.created", entityType: "opportunity", entityId: opportunityId, detail: `Opened ${parsed.data.title} for ${parsed.data.companyName}`, createdAt: now });
+  });
+  revalidatePath("/app/corporate");
+  redirect(`/app/corporate/${opportunityId}`);
+}
+
+export async function updateCorporateOpportunityAction(formData: FormData) {
+  const user = await requireRole([...corporateRoles]);
+  const parsed = z.object({
+    opportunityId: z.string().uuid(), stage: z.enum(["lead", "qualified", "diagnosis", "proposal", "proof", "won", "lost"]),
+    package: z.enum(["team_enablement_15", "team_enablement_30", "private_caio", "enterprise"]), participantCount: z.coerce.number().int().min(1).max(10000),
+    valueAed: z.coerce.number().min(0).max(100_000_000), probability: z.coerce.number().int().min(0).max(100),
+    expectedCloseDate: z.string().optional(), nextStep: z.string().max(500).optional(), nextStepDueAt: z.string().optional(), lostReason: z.string().max(1000).optional(),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const opportunity = database.corporateOpportunities.find((item) => item.id === parsed.data.opportunityId);
+    if (!opportunity) return;
+    const previousStage = opportunity.stage;
+    Object.assign(opportunity, {
+      stage: parsed.data.stage, package: parsed.data.package, participantCount: parsed.data.participantCount, valueAed: parsed.data.valueAed,
+      probability: parsed.data.probability, expectedCloseDate: parsed.data.expectedCloseDate || null, nextStep: parsed.data.nextStep ?? "",
+      nextStepDueAt: parsed.data.nextStepDueAt || null, lostReason: parsed.data.lostReason ?? "", updatedAt: new Date().toISOString(),
+    });
+    if (opportunity.stage === "won") {
+      const account = database.corporateAccounts.find((item) => item.id === opportunity.accountId);
+      if (account) account.status = "client";
+    }
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "opportunity.updated", entityType: "opportunity", entityId: opportunity.id, detail: previousStage === opportunity.stage ? `Updated ${opportunity.title}` : `Moved ${opportunity.title} from ${previousStage} to ${opportunity.stage}`, createdAt: new Date().toISOString() });
+  });
+  revalidatePath("/app/corporate");
+  revalidatePath(`/app/corporate/${parsed.data.opportunityId}`);
+}
+
+export async function saveReadinessAssessmentAction(formData: FormData) {
+  const user = await requireRole([...corporateRoles]);
+  const score = z.coerce.number().int().min(0).max(100);
+  const parsed = z.object({
+    opportunityId: z.string().uuid(), assessmentId: z.string().uuid(), status: z.enum(["draft", "completed"]), respondentName: z.string().max(120).optional(),
+    leadershipScore: score, peopleScore: score, processScore: score, dataScore: score, toolsScore: score, governanceScore: score, adoptionScore: score,
+    executiveSummary: z.string().max(5000).optional(), priorities: z.string().max(4000).optional(), risks: z.string().max(4000).optional(),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  const result = calculateReadiness([parsed.data.leadershipScore, parsed.data.peopleScore, parsed.data.processScore, parsed.data.dataScore, parsed.data.toolsScore, parsed.data.governanceScore, parsed.data.adoptionScore]);
+  await updateDatabase((database) => {
+    const assessment = database.readinessAssessments.find((item) => item.id === parsed.data.assessmentId && item.opportunityId === parsed.data.opportunityId);
+    if (!assessment) return;
+    const now = new Date().toISOString();
+    Object.assign(assessment, { ...parsed.data, overallScore: result.overall, maturity: result.maturity, executiveSummary: parsed.data.executiveSummary ?? "", priorities: parsed.data.priorities ?? "", risks: parsed.data.risks ?? "", completedAt: parsed.data.status === "completed" ? now : null, updatedAt: now });
+    const opportunity = database.corporateOpportunities.find((item) => item.id === assessment.opportunityId);
+    if (opportunity && parsed.data.status === "completed" && ["lead", "qualified"].includes(opportunity.stage)) {
+      opportunity.stage = "diagnosis";
+      opportunity.probability = opportunityStages.find((stage) => stage.id === "diagnosis")!.probability;
+    }
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "diagnostic.saved", entityType: "diagnostic", entityId: assessment.id, detail: `${parsed.data.status === "completed" ? "Completed" : "Saved"} AI readiness diagnostic at ${result.overall}%`, createdAt: now });
+  });
+  revalidatePath("/app/corporate");
+  revalidatePath(`/app/corporate/${parsed.data.opportunityId}/diagnostic`);
+}
+
+export async function addWorkflowOpportunityAction(formData: FormData) {
+  const user = await requireRole([...corporateRoles]);
+  const parsed = z.object({
+    opportunityId: z.string().uuid(), assessmentId: z.string().uuid(), workflowName: z.string().min(3).max(180), department: z.string().min(2).max(100),
+    currentPain: z.string().max(2000).optional(), frequency: z.string().max(100).optional(), valueScore: z.coerce.number().int().min(0).max(100),
+    feasibilityScore: z.coerce.number().int().min(0).max(100), riskLevel: z.enum(["green", "amber", "red"]),
+    humanOversight: z.string().max(2000).optional(), recommendation: z.string().max(2000).optional(), priority: z.coerce.number().int().min(1).max(100),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    if (!database.readinessAssessments.some((item) => item.id === parsed.data.assessmentId && item.opportunityId === parsed.data.opportunityId)) return;
+    const now = new Date().toISOString();
+    database.workflowOpportunities.push({ id: randomUUID(), readinessAssessmentId: parsed.data.assessmentId, workflowName: parsed.data.workflowName, department: parsed.data.department, currentPain: parsed.data.currentPain ?? "", frequency: parsed.data.frequency ?? "", valueScore: parsed.data.valueScore, feasibilityScore: parsed.data.feasibilityScore, riskLevel: parsed.data.riskLevel, humanOversight: parsed.data.humanOversight ?? "", recommendation: parsed.data.recommendation ?? "", priority: parsed.data.priority, createdAt: now });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "workflow.added", entityType: "diagnostic", entityId: parsed.data.assessmentId, detail: `Added ${parsed.data.workflowName} to the workflow register`, createdAt: now });
+  });
+  revalidatePath(`/app/corporate/${parsed.data.opportunityId}/diagnostic`);
+}
+
+export async function createCorporateProposalAction(formData: FormData) {
+  const user = await requireRole([...corporateRoles]);
+  const parsed = z.object({
+    opportunityId: z.string().uuid(), package: z.enum(["team_enablement_15", "team_enablement_30", "private_caio", "enterprise"]),
+    participantCount: z.coerce.number().int().min(1).max(10000), subtotalAed: z.coerce.number().min(0).max(100_000_000),
+    scope: z.string().min(20).max(10000), timeline: z.string().min(3).max(1000), assumptions: z.string().max(5000).optional(), validUntil: z.string().min(10),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  const totals = calculateProposal(parsed.data.subtotalAed, 5);
+  await updateDatabase((database) => {
+    const opportunity = database.corporateOpportunities.find((item) => item.id === parsed.data.opportunityId);
+    if (!opportunity) return;
+    const now = new Date().toISOString();
+    const proposalNumber = `LYM-P-${new Date().getUTCFullYear().toString().slice(-2)}${String(database.corporateProposals.length + 1).padStart(3, "0")}-${randomUUID().slice(0, 4).toUpperCase()}`;
+    database.corporateProposals.push({ id: randomUUID(), opportunityId: opportunity.id, proposalNumber, package: parsed.data.package, participantCount: parsed.data.participantCount, subtotalAed: totals.subtotal, vatRate: 5, vatAed: totals.vat, totalAed: totals.total, scope: parsed.data.scope || standardProposalScope, timeline: parsed.data.timeline, assumptions: parsed.data.assumptions ?? "", status: "draft", validUntil: parsed.data.validUntil, sentAt: null, acceptedAt: null, createdBy: user.id, createdAt: now, updatedAt: now });
+    opportunity.package = parsed.data.package as CorporatePackage;
+    opportunity.participantCount = parsed.data.participantCount;
+    opportunity.valueAed = totals.subtotal;
+    opportunity.stage = "proposal";
+    opportunity.probability = 65;
+    opportunity.updatedAt = now;
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proposal.created", entityType: "proposal", entityId: opportunity.id, detail: `Created ${proposalNumber} for ${opportunity.title}`, createdAt: now });
+  });
+  revalidatePath("/app/corporate");
+  revalidatePath(`/app/corporate/${parsed.data.opportunityId}`);
+  revalidatePath(`/app/corporate/${parsed.data.opportunityId}/proposal`);
+}
+
+export async function updateProposalStatusAction(formData: FormData) {
+  const user = await requireRole([...corporateRoles]);
+  const parsed = z.object({ opportunityId: z.string().uuid(), proposalId: z.string().uuid(), status: z.enum(["draft", "sent", "accepted", "declined", "expired"]) }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const proposal = database.corporateProposals.find((item) => item.id === parsed.data.proposalId && item.opportunityId === parsed.data.opportunityId);
+    if (!proposal) return;
+    const now = new Date().toISOString();
+    proposal.status = parsed.data.status;
+    proposal.sentAt = parsed.data.status === "sent" && !proposal.sentAt ? now : proposal.sentAt;
+    proposal.acceptedAt = parsed.data.status === "accepted" ? now : null;
+    proposal.updatedAt = now;
+    const opportunity = database.corporateOpportunities.find((item) => item.id === proposal.opportunityId);
+    if (opportunity && parsed.data.status === "accepted") { opportunity.stage = "won"; opportunity.probability = 100; opportunity.updatedAt = now; }
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proposal.status_changed", entityType: "proposal", entityId: proposal.id, detail: `Changed ${proposal.proposalNumber} to ${proposal.status}`, createdAt: now });
+  });
+  revalidatePath("/app/corporate");
+  revalidatePath(`/app/corporate/${parsed.data.opportunityId}`);
+  revalidatePath(`/app/corporate/${parsed.data.opportunityId}/proposal`);
+}
+
+export async function scheduleCorporateWorkshopAction(formData: FormData) {
+  const user = await requireRole([...corporateRoles]);
+  const parsed = z.object({
+    opportunityId: z.string().uuid(), proposalId: z.string().uuid().optional(), title: z.string().min(3).max(180),
+    workshopType: z.enum(["executive_readiness", "team_enablement", "manager_coaching", "workflow_lab"]), startsAt: z.string().min(10), endsAt: z.string().min(10),
+    deliveryMode: z.enum(["live_online", "in_person", "hybrid"]), location: z.string().max(200).optional(), joinUrl: z.union([z.literal(""), z.string().url()]),
+    facilitator: z.string().min(2).max(120), participantTarget: z.coerce.number().int().min(1).max(10000), outcomes: z.string().max(3000).optional(), notes: z.string().max(3000).optional(),
+  }).safeParse({ ...Object.fromEntries(formData), proposalId: formData.get("proposalId") || undefined });
+  if (!parsed.success) return;
+  const startsAt = new Date(parsed.data.startsAt);
+  const endsAt = new Date(parsed.data.endsAt);
+  if (!Number.isFinite(startsAt.getTime()) || endsAt <= startsAt) return;
+  await updateDatabase((database) => {
+    if (!database.corporateOpportunities.some((item) => item.id === parsed.data.opportunityId)) return;
+    const now = new Date().toISOString();
+    const id = randomUUID();
+    database.corporateWorkshops.push({ id, opportunityId: parsed.data.opportunityId, proposalId: parsed.data.proposalId ?? null, title: parsed.data.title, workshopType: parsed.data.workshopType, startsAt: startsAt.toISOString(), endsAt: endsAt.toISOString(), deliveryMode: parsed.data.deliveryMode, location: parsed.data.location ?? "", joinUrl: parsed.data.joinUrl, status: "planned", facilitator: parsed.data.facilitator, participantTarget: parsed.data.participantTarget, outcomes: parsed.data.outcomes ?? "", notes: parsed.data.notes ?? "", createdAt: now, updatedAt: now });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "workshop.scheduled", entityType: "workshop", entityId: id, detail: `Scheduled ${parsed.data.title}`, createdAt: now });
+  });
+  revalidatePath("/app/corporate");
+  revalidatePath(`/app/corporate/${parsed.data.opportunityId}/workshops`);
+}
+
+export async function updateCorporateWorkshopStatusAction(formData: FormData) {
+  const user = await requireRole([...corporateRoles]);
+  const parsed = z.object({ opportunityId: z.string().uuid(), workshopId: z.string().uuid(), status: z.enum(["planned", "confirmed", "completed", "cancelled"]) }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const workshop = database.corporateWorkshops.find((item) => item.id === parsed.data.workshopId && item.opportunityId === parsed.data.opportunityId);
+    if (!workshop) return;
+    workshop.status = parsed.data.status;
+    workshop.updatedAt = new Date().toISOString();
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "workshop.status_changed", entityType: "workshop", entityId: workshop.id, detail: `Changed ${workshop.title} to ${workshop.status}`, createdAt: new Date().toISOString() });
+  });
+  revalidatePath("/app/corporate");
+  revalidatePath(`/app/corporate/${parsed.data.opportunityId}/workshops`);
 }

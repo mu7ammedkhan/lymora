@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   Activity,
   BookOpenCheck,
+  Building2,
   ChevronDown,
   LayoutDashboard,
   LogOut,
@@ -24,6 +25,7 @@ const staffNavigation = [
   { label: "Overview", href: "/app", icon: LayoutDashboard },
   { label: "Admissions", href: "/app/admissions", icon: UserSearch },
   { label: "Cohorts", href: "/app/cohorts", icon: BookOpenCheck },
+  { label: "Corporate", href: "/app/corporate", icon: Building2, roles: ["super_admin", "academy_ops"] },
   { label: "Team", href: "/app/team", icon: Users, roles: ["super_admin"] },
   { label: "Activity", href: "/app/activity", icon: Activity, roles: ["super_admin", "academy_ops"] },
   { label: "Settings", href: "/app/settings", icon: Settings, roles: ["super_admin"] },
@@ -35,6 +37,11 @@ const candidateNavigation = [
 ] as const;
 
 function getPageTitle(pathname: string) {
+  if (pathname.includes("/corporate/") && pathname.endsWith("/diagnostic")) return "AI readiness diagnostic";
+  if (pathname.includes("/corporate/") && pathname.endsWith("/proposal")) return "Corporate proposals";
+  if (pathname.includes("/corporate/") && pathname.endsWith("/workshops")) return "Enablement workshops";
+  if (pathname.startsWith("/app/corporate/")) return "Corporate opportunity";
+  if (pathname === "/app/corporate") return "Corporate growth";
   if (pathname.startsWith("/app/admissions/")) return "Applicant record";
   if (pathname === "/app/admissions") return "Admissions";
   if (pathname.includes("/delivery/")) return "Session attendance";
@@ -86,7 +93,7 @@ export function AppShell({ user, children }: { user: SafeUser; children: React.R
 
         <div className="os-sidebar-foot">
           <div className="os-system-status"><i /> All systems operational</div>
-          <span>Phase 2 · Academy delivery</span>
+          <span>Phase 3 - Corporate growth</span>
         </div>
       </aside>
 
@@ -97,16 +104,16 @@ export function AppShell({ user, children }: { user: SafeUser; children: React.R
           <div className="os-topbar-left">
             <button type="button" className="os-icon-button os-menu-trigger" aria-label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={19} /></button>
             <div>
-              <span className="os-topbar-kicker">Lymora Academy</span>
+              <span className="os-topbar-kicker">{pathname.startsWith("/app/corporate") ? "Lymora Corporate" : "Lymora Academy"}</span>
               <strong>{getPageTitle(pathname)}</strong>
             </div>
           </div>
 
           <div className="os-topbar-actions">
             {user.role !== "candidate" && (
-              <form className="os-global-search" action="/app/admissions">
+              <form className="os-global-search" action={pathname.startsWith("/app/corporate") ? "/app/corporate" : "/app/admissions"}>
                 <Search size={16} />
-                <input name="q" aria-label="Search applicants" placeholder="Search applicants" />
+                <input name="q" aria-label={pathname.startsWith("/app/corporate") ? "Search accounts" : "Search applicants"} placeholder={pathname.startsWith("/app/corporate") ? "Search accounts" : "Search applicants"} />
               </form>
             )}
             <div className="os-profile-wrap">

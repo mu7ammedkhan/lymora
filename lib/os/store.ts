@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { hash } from "bcryptjs";
 import { JSONFile } from "lowdb/node";
 import { Low } from "lowdb";
-import type { Application, Cohort, DatabaseSchema, Enrollment, User } from "@/lib/os/types";
+import type { Application, Cohort, CorporateAccount, CorporateOpportunity, CorporateProposal, CorporateWorkshop, DatabaseSchema, Enrollment, ReadinessAssessment, User, WorkflowOpportunity } from "@/lib/os/types";
 import { assertSupabaseConfiguration, wantsSupabase } from "@/lib/supabase/config";
 import { readSupabaseDatabase, updateSupabaseDatabase } from "@/lib/os/supabase-store";
 
@@ -25,6 +25,12 @@ const emptyDatabase: DatabaseSchema = {
   assessmentSubmissions: [],
   assessmentResults: [],
   credentials: [],
+  corporateAccounts: [],
+  corporateOpportunities: [],
+  readinessAssessments: [],
+  workflowOpportunities: [],
+  corporateProposals: [],
+  corporateWorkshops: [],
   activities: [],
 };
 
@@ -313,6 +319,36 @@ const seedEnrollments: Enrollment[] = [
   { id: "enroll-maya", cohortId: "cohort-caio-01", applicationId: "app-maya", status: "invited", progress: 0, createdAt: "2026-07-17T16:25:00.000Z" },
 ];
 
+const seedCorporateAccounts: CorporateAccount[] = [
+  { id: "b1000000-0000-4000-8000-000000000001", companyName: "Northstar Advisory", website: "https://example.com", industry: "Professional Services", employeeBand: "51-100", location: "Dubai, UAE", primaryContactName: "Samira Noor", primaryContactEmail: "samira@example.com", primaryContactPhone: "+971 50 000 1101", primaryContactTitle: "Chief Operating Officer", ownerId: "user-admin", source: "Executive roundtable", status: "active", notes: "Sample account for product demonstration.", createdAt: "2026-07-05T09:00:00.000Z", updatedAt: "2026-07-18T09:00:00.000Z" },
+  { id: "b1000000-0000-4000-8000-000000000002", companyName: "Meridian Clinics Group", website: "https://example.com", industry: "Healthcare", employeeBand: "101-200", location: "Abu Dhabi, UAE", primaryContactName: "Omar Rahal", primaryContactEmail: "omar@example.com", primaryContactPhone: "+971 50 000 1102", primaryContactTitle: "Director of Operations", ownerId: "user-admin", source: "Referral", status: "prospect", notes: "Sample account for product demonstration.", createdAt: "2026-07-08T09:00:00.000Z", updatedAt: "2026-07-17T09:00:00.000Z" },
+  { id: "b1000000-0000-4000-8000-000000000003", companyName: "Harbourline Properties", website: "https://example.com", industry: "Real Estate", employeeBand: "21-50", location: "Dubai, UAE", primaryContactName: "Layla Darwish", primaryContactEmail: "layla@example.com", primaryContactPhone: "+971 50 000 1103", primaryContactTitle: "Managing Director", ownerId: "user-admin", source: "Website", status: "prospect", notes: "Sample account for product demonstration.", createdAt: "2026-07-11T09:00:00.000Z", updatedAt: "2026-07-19T08:00:00.000Z" },
+];
+
+const seedCorporateOpportunities: CorporateOpportunity[] = [
+  { id: "b2000000-0000-4000-8000-000000000001", accountId: seedCorporateAccounts[0].id, title: "Operations AI enablement pilot", package: "team_enablement_15", participantCount: 15, stage: "proposal", valueAed: 12500, probability: 65, expectedCloseDate: "2026-08-07", nextStep: "Review proposal with COO", nextStepDueAt: "2026-07-23", ownerId: "user-admin", lostReason: "", createdAt: "2026-07-05T09:00:00.000Z", updatedAt: "2026-07-18T09:00:00.000Z" },
+  { id: "b2000000-0000-4000-8000-000000000002", accountId: seedCorporateAccounts[1].id, title: "Executive readiness and workflow audit", package: "team_enablement_30", participantCount: 30, stage: "diagnosis", valueAed: 22500, probability: 45, expectedCloseDate: "2026-08-21", nextStep: "Run executive readiness session", nextStepDueAt: "2026-07-28", ownerId: "user-admin", lostReason: "", createdAt: "2026-07-08T09:00:00.000Z", updatedAt: "2026-07-17T09:00:00.000Z" },
+  { id: "b2000000-0000-4000-8000-000000000003", accountId: seedCorporateAccounts[2].id, title: "Sales and leasing workflow lab", package: "team_enablement_15", participantCount: 12, stage: "qualified", valueAed: 12500, probability: 25, expectedCloseDate: "2026-09-04", nextStep: "Confirm department workflow owners", nextStepDueAt: "2026-07-25", ownerId: "user-admin", lostReason: "", createdAt: "2026-07-11T09:00:00.000Z", updatedAt: "2026-07-19T08:00:00.000Z" },
+];
+
+const seedReadinessAssessments: ReadinessAssessment[] = [
+  { id: "b3000000-0000-4000-8000-000000000001", opportunityId: seedCorporateOpportunities[0].id, status: "completed", respondentName: "Samira Noor", leadershipScore: 72, peopleScore: 61, processScore: 74, dataScore: 55, toolsScore: 68, governanceScore: 42, adoptionScore: 57, overallScore: 61, maturity: "ready", executiveSummary: "Strong operational ownership and repeatable workflows create a credible pilot path. Governance and approved data handling need to be established before wider deployment.", priorities: "Set approved-use policy; pilot two high-volume workflows; train managers on human oversight.", risks: "Unapproved tools and inconsistent review of client-facing output.", completedAt: "2026-07-16T12:00:00.000Z", createdAt: "2026-07-12T09:00:00.000Z", updatedAt: "2026-07-16T12:00:00.000Z" },
+];
+
+const seedWorkflowOpportunities: WorkflowOpportunity[] = [
+  { id: "b4000000-0000-4000-8000-000000000001", readinessAssessmentId: seedReadinessAssessments[0].id, workflowName: "Weekly client reporting", department: "Operations", currentPain: "Six hours of manual synthesis every week", frequency: "Weekly", valueScore: 88, feasibilityScore: 82, riskLevel: "amber", humanOversight: "Account lead approves every client-facing report", recommendation: "Pilot with approved source folders and a fixed review checklist", priority: 1, createdAt: "2026-07-16T12:00:00.000Z" },
+  { id: "b4000000-0000-4000-8000-000000000002", readinessAssessmentId: seedReadinessAssessments[0].id, workflowName: "Proposal first draft", department: "Growth", currentPain: "Senior staff recreate standard sections", frequency: "10-15 per month", valueScore: 78, feasibilityScore: 76, riskLevel: "amber", humanOversight: "Commercial owner validates claims, scope and pricing", recommendation: "Create controlled template and instruction library", priority: 2, createdAt: "2026-07-16T12:00:00.000Z" },
+];
+
+const seedCorporateProposals: CorporateProposal[] = [
+  { id: "b5000000-0000-4000-8000-000000000001", opportunityId: seedCorporateOpportunities[0].id, proposalNumber: "LYM-P-26001", package: "team_enablement_15", participantCount: 15, subtotalAed: 12500, vatRate: 5, vatAed: 625, totalAed: 13125, scope: "AI readiness assessment and workflow audit\nCustomised live training and role-specific instruction library\nDepartment AI playbook and 30-day implementation plan\nManager coaching, certificates and outcome report", timeline: "Four weeks from kickoff", assumptions: "Training fees payable in advance. Software, travel and major customisation are excluded.", status: "sent", validUntil: "2026-08-07", sentAt: "2026-07-18T09:00:00.000Z", acceptedAt: null, createdBy: "user-admin", createdAt: "2026-07-18T08:00:00.000Z", updatedAt: "2026-07-18T09:00:00.000Z" },
+];
+
+const seedCorporateWorkshops: CorporateWorkshop[] = [
+  { id: "b6000000-0000-4000-8000-000000000001", opportunityId: seedCorporateOpportunities[1].id, proposalId: null, title: "Executive AI readiness session", workshopType: "executive_readiness", startsAt: "2026-07-28T06:00:00.000Z", endsAt: "2026-07-28T08:00:00.000Z", deliveryMode: "in_person", location: "Abu Dhabi", joinUrl: "", status: "confirmed", facilitator: "Lymora Advisory", participantTarget: 8, outcomes: "Agree readiness baseline and select priority departments.", notes: "Sample workshop for product demonstration.", createdAt: "2026-07-17T09:00:00.000Z", updatedAt: "2026-07-17T09:00:00.000Z" },
+  { id: "b6000000-0000-4000-8000-000000000002", opportunityId: seedCorporateOpportunities[0].id, proposalId: seedCorporateProposals[0].id, title: "Operations workflow lab", workshopType: "workflow_lab", startsAt: "2026-08-12T05:00:00.000Z", endsAt: "2026-08-12T08:00:00.000Z", deliveryMode: "hybrid", location: "Dubai", joinUrl: "https://meet.example.com/lymora", status: "planned", facilitator: "Lymora Enablement", participantTarget: 15, outcomes: "Build and validate two HITL workflows.", notes: "Subject to proposal acceptance.", createdAt: "2026-07-18T09:00:00.000Z", updatedAt: "2026-07-18T09:00:00.000Z" },
+];
+
 async function seedUsers(): Promise<User[]> {
   const now = "2026-07-10T08:00:00.000Z";
   const developmentPassword = (value: string | undefined, fallback: string, variable: string) => {
@@ -345,6 +381,12 @@ async function initialiseDatabase() {
   if (database.data.applications.length === 0) database.data.applications = seedApplications;
   if (database.data.cohorts.length === 0) database.data.cohorts = seedCohorts;
   if (database.data.enrollments.length === 0) database.data.enrollments = seedEnrollments;
+  if (database.data.corporateAccounts.length === 0) database.data.corporateAccounts = seedCorporateAccounts;
+  if (database.data.corporateOpportunities.length === 0) database.data.corporateOpportunities = seedCorporateOpportunities;
+  if (database.data.readinessAssessments.length === 0) database.data.readinessAssessments = seedReadinessAssessments;
+  if (database.data.workflowOpportunities.length === 0) database.data.workflowOpportunities = seedWorkflowOpportunities;
+  if (database.data.corporateProposals.length === 0) database.data.corporateProposals = seedCorporateProposals;
+  if (database.data.corporateWorkshops.length === 0) database.data.corporateWorkshops = seedCorporateWorkshops;
   if (database.data.activities.length === 0) {
     database.data.activities = [
       { id: randomUUID(), actorId: "user-admin", action: "cohort.created", entityType: "cohort", entityId: "cohort-caio-01", detail: "Created CAIO Founding Cohort", createdAt: "2026-07-10T09:00:00.000Z" },

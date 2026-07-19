@@ -10,12 +10,18 @@ import type {
   Cohort,
   CohortModule,
   CohortSession,
+  CorporateAccount,
+  CorporateOpportunity,
+  CorporateProposal,
+  CorporateWorkshop,
   Credential,
   DatabaseSchema,
   Enrollment,
   LearningModule,
+  ReadinessAssessment,
   Role,
   User,
+  WorkflowOpportunity,
 } from "@/lib/os/types";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -131,6 +137,68 @@ function rowToCredential(row: Row): Credential {
   };
 }
 
+function rowToCorporateAccount(row: Row): CorporateAccount {
+  return {
+    id: String(row.id), companyName: String(row.company_name), website: String(row.website), industry: String(row.industry),
+    employeeBand: String(row.employee_band), location: String(row.location), primaryContactName: String(row.primary_contact_name),
+    primaryContactEmail: String(row.primary_contact_email), primaryContactPhone: String(row.primary_contact_phone),
+    primaryContactTitle: String(row.primary_contact_title), ownerId: row.owner_id ? String(row.owner_id) : null, source: String(row.source),
+    status: row.status as CorporateAccount["status"], notes: String(row.notes), createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToCorporateOpportunity(row: Row): CorporateOpportunity {
+  return {
+    id: String(row.id), accountId: String(row.account_id), title: String(row.title), package: row.package as CorporateOpportunity["package"],
+    participantCount: Number(row.participant_count), stage: row.stage as CorporateOpportunity["stage"], valueAed: Number(row.value_aed),
+    probability: Number(row.probability), expectedCloseDate: row.expected_close_date ? String(row.expected_close_date) : null,
+    nextStep: String(row.next_step), nextStepDueAt: row.next_step_due_at ? String(row.next_step_due_at) : null,
+    ownerId: row.owner_id ? String(row.owner_id) : null, lostReason: String(row.lost_reason), createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToReadinessAssessment(row: Row): ReadinessAssessment {
+  return {
+    id: String(row.id), opportunityId: String(row.opportunity_id), status: row.status as ReadinessAssessment["status"],
+    respondentName: String(row.respondent_name), leadershipScore: Number(row.leadership_score), peopleScore: Number(row.people_score),
+    processScore: Number(row.process_score), dataScore: Number(row.data_score), toolsScore: Number(row.tools_score),
+    governanceScore: Number(row.governance_score), adoptionScore: Number(row.adoption_score), overallScore: Number(row.overall_score),
+    maturity: row.maturity as ReadinessAssessment["maturity"], executiveSummary: String(row.executive_summary), priorities: String(row.priorities),
+    risks: String(row.risks), completedAt: row.completed_at ? String(row.completed_at) : null, createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToWorkflowOpportunity(row: Row): WorkflowOpportunity {
+  return {
+    id: String(row.id), readinessAssessmentId: String(row.readiness_assessment_id), workflowName: String(row.workflow_name),
+    department: String(row.department), currentPain: String(row.current_pain), frequency: String(row.frequency), valueScore: Number(row.value_score),
+    feasibilityScore: Number(row.feasibility_score), riskLevel: row.risk_level as WorkflowOpportunity["riskLevel"],
+    humanOversight: String(row.human_oversight), recommendation: String(row.recommendation), priority: Number(row.priority), createdAt: String(row.created_at),
+  };
+}
+
+function rowToCorporateProposal(row: Row): CorporateProposal {
+  return {
+    id: String(row.id), opportunityId: String(row.opportunity_id), proposalNumber: String(row.proposal_number), package: row.package as CorporateProposal["package"],
+    participantCount: Number(row.participant_count), subtotalAed: Number(row.subtotal_aed), vatRate: Number(row.vat_rate), vatAed: Number(row.vat_aed),
+    totalAed: Number(row.total_aed), scope: String(row.scope), timeline: String(row.timeline), assumptions: String(row.assumptions),
+    status: row.status as CorporateProposal["status"], validUntil: String(row.valid_until), sentAt: row.sent_at ? String(row.sent_at) : null,
+    acceptedAt: row.accepted_at ? String(row.accepted_at) : null, createdBy: row.created_by ? String(row.created_by) : null,
+    createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToCorporateWorkshop(row: Row): CorporateWorkshop {
+  return {
+    id: String(row.id), opportunityId: String(row.opportunity_id), proposalId: row.proposal_id ? String(row.proposal_id) : null,
+    title: String(row.title), workshopType: row.workshop_type as CorporateWorkshop["workshopType"], startsAt: String(row.starts_at),
+    endsAt: String(row.ends_at), deliveryMode: row.delivery_mode as CorporateWorkshop["deliveryMode"], location: String(row.location),
+    joinUrl: String(row.join_url), status: row.status as CorporateWorkshop["status"], facilitator: String(row.facilitator),
+    participantTarget: Number(row.participant_target), outcomes: String(row.outcomes), notes: String(row.notes),
+    createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
 function applicationToRow(item: Application) {
   return {
     id: item.id, application_number: item.number, full_name: item.fullName, email: item.email, phone: item.phone, location: item.location,
@@ -189,6 +257,30 @@ function credentialToRow(item: Credential) {
   return { id: item.id, enrollment_id: item.enrollmentId, credential_number: item.credentialNumber, status: item.status, overall_score: item.overallScore, classification: item.classification, issued_at: item.issuedAt, expires_at: item.expiresAt, verification_code: item.verificationCode, issued_by: item.issuedBy, created_at: item.createdAt };
 }
 
+function corporateAccountToRow(item: CorporateAccount) {
+  return { id: item.id, company_name: item.companyName, website: item.website, industry: item.industry, employee_band: item.employeeBand, location: item.location, primary_contact_name: item.primaryContactName, primary_contact_email: item.primaryContactEmail, primary_contact_phone: item.primaryContactPhone, primary_contact_title: item.primaryContactTitle, owner_id: item.ownerId, source: item.source, status: item.status, notes: item.notes, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function corporateOpportunityToRow(item: CorporateOpportunity) {
+  return { id: item.id, account_id: item.accountId, title: item.title, package: item.package, participant_count: item.participantCount, stage: item.stage, value_aed: item.valueAed, probability: item.probability, expected_close_date: item.expectedCloseDate, next_step: item.nextStep, next_step_due_at: item.nextStepDueAt, owner_id: item.ownerId, lost_reason: item.lostReason, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function readinessAssessmentToRow(item: ReadinessAssessment) {
+  return { id: item.id, opportunity_id: item.opportunityId, status: item.status, respondent_name: item.respondentName, leadership_score: item.leadershipScore, people_score: item.peopleScore, process_score: item.processScore, data_score: item.dataScore, tools_score: item.toolsScore, governance_score: item.governanceScore, adoption_score: item.adoptionScore, overall_score: item.overallScore, maturity: item.maturity, executive_summary: item.executiveSummary, priorities: item.priorities, risks: item.risks, completed_at: item.completedAt, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function workflowOpportunityToRow(item: WorkflowOpportunity) {
+  return { id: item.id, readiness_assessment_id: item.readinessAssessmentId, workflow_name: item.workflowName, department: item.department, current_pain: item.currentPain, frequency: item.frequency, value_score: item.valueScore, feasibility_score: item.feasibilityScore, risk_level: item.riskLevel, human_oversight: item.humanOversight, recommendation: item.recommendation, priority: item.priority, created_at: item.createdAt };
+}
+
+function corporateProposalToRow(item: CorporateProposal) {
+  return { id: item.id, opportunity_id: item.opportunityId, proposal_number: item.proposalNumber, package: item.package, participant_count: item.participantCount, subtotal_aed: item.subtotalAed, vat_rate: item.vatRate, vat_aed: item.vatAed, total_aed: item.totalAed, scope: item.scope, timeline: item.timeline, assumptions: item.assumptions, status: item.status, valid_until: item.validUntil, sent_at: item.sentAt, accepted_at: item.acceptedAt, created_by: item.createdBy, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function corporateWorkshopToRow(item: CorporateWorkshop) {
+  return { id: item.id, opportunity_id: item.opportunityId, proposal_id: item.proposalId, title: item.title, workshop_type: item.workshopType, starts_at: item.startsAt, ends_at: item.endsAt, delivery_mode: item.deliveryMode, location: item.location, join_url: item.joinUrl, status: item.status, facilitator: item.facilitator, participant_target: item.participantTarget, outcomes: item.outcomes, notes: item.notes, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
 function changedItems<T extends { id: string }>(before: T[], after: T[]) {
   const previous = new Map(before.map((item) => [item.id, JSON.stringify(item)]));
   return after.filter((item) => previous.get(item.id) !== JSON.stringify(item));
@@ -201,7 +293,7 @@ async function requireRows(table: string, result: { data: unknown[] | null; erro
 
 export async function readSupabaseDatabase(): Promise<DatabaseSchema> {
   const client = createSupabaseAdminClient();
-  const [profilesResult, applicationsResult, cohortsResult, enrollmentsResult, modulesResult, cohortModulesResult, sessionsResult, attendanceResult, componentsResult, submissionsResult, resultsResult, credentialsResult, activitiesResult] = await Promise.all([
+  const [profilesResult, applicationsResult, cohortsResult, enrollmentsResult, modulesResult, cohortModulesResult, sessionsResult, attendanceResult, componentsResult, submissionsResult, resultsResult, credentialsResult, accountsResult, opportunitiesResult, readinessResult, workflowsResult, proposalsResult, workshopsResult, activitiesResult] = await Promise.all([
     client.from("profiles").select("*").order("created_at", { ascending: true }),
     client.from("applications").select("*").order("created_at", { ascending: false }),
     client.from("cohorts").select("*").order("start_date", { ascending: true }),
@@ -214,6 +306,12 @@ export async function readSupabaseDatabase(): Promise<DatabaseSchema> {
     client.from("assessment_submissions").select("*").order("updated_at", { ascending: false }),
     client.from("assessment_results").select("*").order("graded_at", { ascending: false }),
     client.from("credentials").select("*").order("created_at", { ascending: false }),
+    client.from("corporate_accounts").select("*").order("created_at", { ascending: false }),
+    client.from("corporate_opportunities").select("*").order("updated_at", { ascending: false }),
+    client.from("readiness_assessments").select("*").order("updated_at", { ascending: false }),
+    client.from("workflow_opportunities").select("*").order("priority", { ascending: true }),
+    client.from("corporate_proposals").select("*").order("created_at", { ascending: false }),
+    client.from("corporate_workshops").select("*").order("starts_at", { ascending: true }),
     client.from("activities").select("*").order("created_at", { ascending: false }).limit(500),
   ]);
   const profiles = await requireRows("profiles", profilesResult);
@@ -228,12 +326,21 @@ export async function readSupabaseDatabase(): Promise<DatabaseSchema> {
   const submissions = await requireRows("assessment_submissions", submissionsResult);
   const results = await requireRows("assessment_results", resultsResult);
   const credentials = await requireRows("credentials", credentialsResult);
+  const accounts = await requireRows("corporate_accounts", accountsResult);
+  const opportunities = await requireRows("corporate_opportunities", opportunitiesResult);
+  const readiness = await requireRows("readiness_assessments", readinessResult);
+  const workflows = await requireRows("workflow_opportunities", workflowsResult);
+  const proposals = await requireRows("corporate_proposals", proposalsResult);
+  const workshops = await requireRows("corporate_workshops", workshopsResult);
   const activities = await requireRows("activities", activitiesResult);
   return {
     users: profiles.map(profileToUser), sessions: [], applications: applications.map(rowToApplication), cohorts: cohorts.map(rowToCohort),
     enrollments: enrollments.map(rowToEnrollment), learningModules: modules.map(rowToLearningModule), cohortModules: cohortModules.map(rowToCohortModule),
     cohortSessions: sessions.map(rowToCohortSession), attendanceRecords: attendance.map(rowToAttendance), assessmentComponents: components.map(rowToAssessmentComponent),
     assessmentSubmissions: submissions.map(rowToAssessmentSubmission), assessmentResults: results.map(rowToAssessmentResult), credentials: credentials.map(rowToCredential),
+    corporateAccounts: accounts.map(rowToCorporateAccount), corporateOpportunities: opportunities.map(rowToCorporateOpportunity),
+    readinessAssessments: readiness.map(rowToReadinessAssessment), workflowOpportunities: workflows.map(rowToWorkflowOpportunity),
+    corporateProposals: proposals.map(rowToCorporateProposal), corporateWorkshops: workshops.map(rowToCorporateWorkshop),
     activities: activities.map(rowToActivity),
   };
 }
@@ -261,6 +368,12 @@ export async function updateSupabaseDatabase<T>(operation: (data: DatabaseSchema
   await upsertRows("assessment_submissions", changedItems(before.assessmentSubmissions, after.assessmentSubmissions).map(assessmentSubmissionToRow));
   await upsertRows("assessment_results", changedItems(before.assessmentResults, after.assessmentResults).map(assessmentResultToRow));
   await upsertRows("credentials", changedItems(before.credentials, after.credentials).map(credentialToRow));
+  await upsertRows("corporate_accounts", changedItems(before.corporateAccounts, after.corporateAccounts).map(corporateAccountToRow));
+  await upsertRows("corporate_opportunities", changedItems(before.corporateOpportunities, after.corporateOpportunities).map(corporateOpportunityToRow));
+  await upsertRows("readiness_assessments", changedItems(before.readinessAssessments, after.readinessAssessments).map(readinessAssessmentToRow));
+  await upsertRows("workflow_opportunities", changedItems(before.workflowOpportunities, after.workflowOpportunities).map(workflowOpportunityToRow));
+  await upsertRows("corporate_proposals", changedItems(before.corporateProposals, after.corporateProposals).map(corporateProposalToRow));
+  await upsertRows("corporate_workshops", changedItems(before.corporateWorkshops, after.corporateWorkshops).map(corporateWorkshopToRow));
   await upsertRows("activities", changedItems(before.activities, after.activities).map(activityToRow));
   return result;
 }

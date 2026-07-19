@@ -476,6 +476,296 @@ export type Database = {
         }
         Relationships: []
       }
+      corporate_accounts: {
+        Row: {
+          company_name: string
+          created_at: string
+          employee_band: string
+          id: string
+          industry: string
+          location: string
+          notes: string
+          owner_id: string | null
+          primary_contact_email: string
+          primary_contact_name: string
+          primary_contact_phone: string
+          primary_contact_title: string
+          source: string
+          status: Database["public"]["Enums"]["corporate_account_status"]
+          updated_at: string
+          website: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          employee_band: string
+          id?: string
+          industry: string
+          location?: string
+          notes?: string
+          owner_id?: string | null
+          primary_contact_email: string
+          primary_contact_name: string
+          primary_contact_phone?: string
+          primary_contact_title?: string
+          source?: string
+          status?: Database["public"]["Enums"]["corporate_account_status"]
+          updated_at?: string
+          website?: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          employee_band?: string
+          id?: string
+          industry?: string
+          location?: string
+          notes?: string
+          owner_id?: string | null
+          primary_contact_email?: string
+          primary_contact_name?: string
+          primary_contact_phone?: string
+          primary_contact_title?: string
+          source?: string
+          status?: Database["public"]["Enums"]["corporate_account_status"]
+          updated_at?: string
+          website?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corporate_accounts_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      corporate_opportunities: {
+        Row: {
+          account_id: string
+          created_at: string
+          expected_close_date: string | null
+          id: string
+          lost_reason: string
+          next_step: string
+          next_step_due_at: string | null
+          owner_id: string | null
+          package: Database["public"]["Enums"]["corporate_package"]
+          participant_count: number
+          probability: number
+          stage: Database["public"]["Enums"]["opportunity_stage"]
+          title: string
+          updated_at: string
+          value_aed: number
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          expected_close_date?: string | null
+          id?: string
+          lost_reason?: string
+          next_step?: string
+          next_step_due_at?: string | null
+          owner_id?: string | null
+          package?: Database["public"]["Enums"]["corporate_package"]
+          participant_count?: number
+          probability?: number
+          stage?: Database["public"]["Enums"]["opportunity_stage"]
+          title: string
+          updated_at?: string
+          value_aed?: number
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          expected_close_date?: string | null
+          id?: string
+          lost_reason?: string
+          next_step?: string
+          next_step_due_at?: string | null
+          owner_id?: string | null
+          package?: Database["public"]["Enums"]["corporate_package"]
+          participant_count?: number
+          probability?: number
+          stage?: Database["public"]["Enums"]["opportunity_stage"]
+          title?: string
+          updated_at?: string
+          value_aed?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corporate_opportunities_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "corporate_opportunities_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      corporate_proposals: {
+        Row: {
+          accepted_at: string | null
+          assumptions: string
+          created_at: string
+          created_by: string | null
+          id: string
+          opportunity_id: string
+          package: Database["public"]["Enums"]["corporate_package"]
+          participant_count: number
+          proposal_number: string
+          scope: string
+          sent_at: string | null
+          status: Database["public"]["Enums"]["proposal_status"]
+          subtotal_aed: number
+          timeline: string
+          total_aed: number
+          updated_at: string
+          valid_until: string
+          vat_aed: number
+          vat_rate: number
+        }
+        Insert: {
+          accepted_at?: string | null
+          assumptions?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          opportunity_id: string
+          package: Database["public"]["Enums"]["corporate_package"]
+          participant_count: number
+          proposal_number: string
+          scope: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["proposal_status"]
+          subtotal_aed: number
+          timeline: string
+          total_aed: number
+          updated_at?: string
+          valid_until: string
+          vat_aed?: number
+          vat_rate?: number
+        }
+        Update: {
+          accepted_at?: string | null
+          assumptions?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          opportunity_id?: string
+          package?: Database["public"]["Enums"]["corporate_package"]
+          participant_count?: number
+          proposal_number?: string
+          scope?: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["proposal_status"]
+          subtotal_aed?: number
+          timeline?: string
+          total_aed?: number
+          updated_at?: string
+          valid_until?: string
+          vat_aed?: number
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corporate_proposals_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "corporate_proposals_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      corporate_workshops: {
+        Row: {
+          created_at: string
+          delivery_mode: Database["public"]["Enums"]["session_delivery_mode"]
+          ends_at: string
+          facilitator: string
+          id: string
+          join_url: string
+          location: string
+          notes: string
+          opportunity_id: string
+          outcomes: string
+          participant_target: number
+          proposal_id: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["workshop_status"]
+          title: string
+          updated_at: string
+          workshop_type: Database["public"]["Enums"]["corporate_workshop_type"]
+        }
+        Insert: {
+          created_at?: string
+          delivery_mode?: Database["public"]["Enums"]["session_delivery_mode"]
+          ends_at: string
+          facilitator?: string
+          id?: string
+          join_url?: string
+          location?: string
+          notes?: string
+          opportunity_id: string
+          outcomes?: string
+          participant_target?: number
+          proposal_id?: string | null
+          starts_at: string
+          status?: Database["public"]["Enums"]["workshop_status"]
+          title: string
+          updated_at?: string
+          workshop_type: Database["public"]["Enums"]["corporate_workshop_type"]
+        }
+        Update: {
+          created_at?: string
+          delivery_mode?: Database["public"]["Enums"]["session_delivery_mode"]
+          ends_at?: string
+          facilitator?: string
+          id?: string
+          join_url?: string
+          location?: string
+          notes?: string
+          opportunity_id?: string
+          outcomes?: string
+          participant_target?: number
+          proposal_id?: string | null
+          starts_at?: string
+          status?: Database["public"]["Enums"]["workshop_status"]
+          title?: string
+          updated_at?: string
+          workshop_type?: Database["public"]["Enums"]["corporate_workshop_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corporate_workshops_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "corporate_workshops_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credentials: {
         Row: {
           classification: Database["public"]["Enums"]["credential_classification"]
@@ -661,6 +951,136 @@ export type Database = {
           },
         ]
       }
+      readiness_assessments: {
+        Row: {
+          adoption_score: number
+          completed_at: string | null
+          created_at: string
+          data_score: number
+          executive_summary: string
+          governance_score: number
+          id: string
+          leadership_score: number
+          maturity: Database["public"]["Enums"]["ai_maturity_level"]
+          opportunity_id: string
+          overall_score: number
+          people_score: number
+          priorities: string
+          process_score: number
+          respondent_name: string
+          risks: string
+          status: Database["public"]["Enums"]["diagnostic_status"]
+          tools_score: number
+          updated_at: string
+        }
+        Insert: {
+          adoption_score?: number
+          completed_at?: string | null
+          created_at?: string
+          data_score?: number
+          executive_summary?: string
+          governance_score?: number
+          id?: string
+          leadership_score?: number
+          maturity?: Database["public"]["Enums"]["ai_maturity_level"]
+          opportunity_id: string
+          overall_score?: number
+          people_score?: number
+          priorities?: string
+          process_score?: number
+          respondent_name?: string
+          risks?: string
+          status?: Database["public"]["Enums"]["diagnostic_status"]
+          tools_score?: number
+          updated_at?: string
+        }
+        Update: {
+          adoption_score?: number
+          completed_at?: string | null
+          created_at?: string
+          data_score?: number
+          executive_summary?: string
+          governance_score?: number
+          id?: string
+          leadership_score?: number
+          maturity?: Database["public"]["Enums"]["ai_maturity_level"]
+          opportunity_id?: string
+          overall_score?: number
+          people_score?: number
+          priorities?: string
+          process_score?: number
+          respondent_name?: string
+          risks?: string
+          status?: Database["public"]["Enums"]["diagnostic_status"]
+          tools_score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "readiness_assessments_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: true
+            referencedRelation: "corporate_opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_opportunities: {
+        Row: {
+          created_at: string
+          current_pain: string
+          department: string
+          feasibility_score: number
+          frequency: string
+          human_oversight: string
+          id: string
+          priority: number
+          readiness_assessment_id: string
+          recommendation: string
+          risk_level: Database["public"]["Enums"]["ai_risk_level"]
+          value_score: number
+          workflow_name: string
+        }
+        Insert: {
+          created_at?: string
+          current_pain?: string
+          department: string
+          feasibility_score?: number
+          frequency?: string
+          human_oversight?: string
+          id?: string
+          priority?: number
+          readiness_assessment_id: string
+          recommendation?: string
+          risk_level?: Database["public"]["Enums"]["ai_risk_level"]
+          value_score?: number
+          workflow_name: string
+        }
+        Update: {
+          created_at?: string
+          current_pain?: string
+          department?: string
+          feasibility_score?: number
+          frequency?: string
+          human_oversight?: string
+          id?: string
+          priority?: number
+          readiness_assessment_id?: string
+          recommendation?: string
+          risk_level?: Database["public"]["Enums"]["ai_risk_level"]
+          value_score?: number
+          workflow_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_opportunities_readiness_assessment_id_fkey"
+            columns: ["readiness_assessment_id"]
+            isOneToOne: false
+            referencedRelation: "readiness_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -678,6 +1098,13 @@ export type Database = {
         | "user"
         | "assessment"
         | "credential"
+        | "account"
+        | "opportunity"
+        | "diagnostic"
+        | "proposal"
+        | "workshop"
+      ai_maturity_level: "emerging" | "developing" | "ready" | "leading"
+      ai_risk_level: "green" | "amber" | "red"
       app_role: "super_admin" | "academy_ops" | "assessor" | "candidate"
       application_source: "website" | "manual" | "referral"
       application_status:
@@ -691,8 +1118,20 @@ export type Database = {
       attendance_status: "present" | "late" | "excused" | "absent"
       cohort_module_status: "locked" | "open" | "completed"
       cohort_status: "draft" | "enrolling" | "active" | "completed"
+      corporate_account_status: "prospect" | "active" | "client" | "inactive"
+      corporate_package:
+        | "team_enablement_15"
+        | "team_enablement_30"
+        | "private_caio"
+        | "enterprise"
+      corporate_workshop_type:
+        | "executive_readiness"
+        | "team_enablement"
+        | "manager_coaching"
+        | "workflow_lab"
       credential_classification: "pass" | "distinction"
       credential_status: "eligible" | "issued" | "revoked" | "expired"
+      diagnostic_status: "draft" | "completed"
       enrollment_status:
         | "invited"
         | "enrolled"
@@ -700,6 +1139,15 @@ export type Database = {
         | "completed"
         | "withdrawn"
       learning_module_status: "draft" | "published" | "archived"
+      opportunity_stage:
+        | "lead"
+        | "qualified"
+        | "diagnosis"
+        | "proposal"
+        | "proof"
+        | "won"
+        | "lost"
+      proposal_status: "draft" | "sent" | "accepted" | "declined" | "expired"
       session_delivery_mode: "live_online" | "in_person" | "hybrid"
       session_status: "scheduled" | "live" | "completed" | "cancelled"
       submission_status:
@@ -708,6 +1156,7 @@ export type Database = {
         | "under_review"
         | "revision_requested"
         | "accepted"
+      workshop_status: "planned" | "confirmed" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -844,7 +1293,14 @@ export const Constants = {
         "user",
         "assessment",
         "credential",
+        "account",
+        "opportunity",
+        "diagnostic",
+        "proposal",
+        "workshop",
       ],
+      ai_maturity_level: ["emerging", "developing", "ready", "leading"],
+      ai_risk_level: ["green", "amber", "red"],
       app_role: ["super_admin", "academy_ops", "assessor", "candidate"],
       application_source: ["website", "manual", "referral"],
       application_status: [
@@ -859,8 +1315,22 @@ export const Constants = {
       attendance_status: ["present", "late", "excused", "absent"],
       cohort_module_status: ["locked", "open", "completed"],
       cohort_status: ["draft", "enrolling", "active", "completed"],
+      corporate_account_status: ["prospect", "active", "client", "inactive"],
+      corporate_package: [
+        "team_enablement_15",
+        "team_enablement_30",
+        "private_caio",
+        "enterprise",
+      ],
+      corporate_workshop_type: [
+        "executive_readiness",
+        "team_enablement",
+        "manager_coaching",
+        "workflow_lab",
+      ],
       credential_classification: ["pass", "distinction"],
       credential_status: ["eligible", "issued", "revoked", "expired"],
+      diagnostic_status: ["draft", "completed"],
       enrollment_status: [
         "invited",
         "enrolled",
@@ -869,6 +1339,16 @@ export const Constants = {
         "withdrawn",
       ],
       learning_module_status: ["draft", "published", "archived"],
+      opportunity_stage: [
+        "lead",
+        "qualified",
+        "diagnosis",
+        "proposal",
+        "proof",
+        "won",
+        "lost",
+      ],
+      proposal_status: ["draft", "sent", "accepted", "declined", "expired"],
       session_delivery_mode: ["live_online", "in_person", "hybrid"],
       session_status: ["scheduled", "live", "completed", "cancelled"],
       submission_status: [
@@ -878,6 +1358,7 @@ export const Constants = {
         "revision_requested",
         "accepted",
       ],
+      workshop_status: ["planned", "confirmed", "completed", "cancelled"],
     },
   },
 } as const
