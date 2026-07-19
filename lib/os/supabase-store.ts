@@ -14,6 +14,7 @@ import type {
   CorporateOpportunity,
   CorporateProposal,
   CorporateWorkshop,
+  CaseStudy,
   Credential,
   ClientSop,
   DatabaseSchema,
@@ -21,8 +22,15 @@ import type {
   LearningModule,
   OperatorOnboardingItem,
   OperatorQualityReview,
+  OutcomeMetric,
+  OutcomeReport,
+  PartnerReferral,
+  Partnership,
   ReadinessAssessment,
+  RepeatabilityBenchmark,
   Role,
+  RoleSpecialisation,
+  Testimonial,
   User,
   WorkforceDeployment,
   WorkforceMatch,
@@ -277,6 +285,90 @@ function rowToOperatorQualityReview(row: Row): OperatorQualityReview {
   };
 }
 
+function rowToOutcomeReport(row: Row): OutcomeReport {
+  return {
+    id: String(row.id), reportNumber: String(row.report_number), accountId: row.account_id ? String(row.account_id) : null,
+    opportunityId: row.opportunity_id ? String(row.opportunity_id) : null, deploymentId: row.deployment_id ? String(row.deployment_id) : null,
+    cohortId: row.cohort_id ? String(row.cohort_id) : null, expansionOpportunityId: row.expansion_opportunity_id ? String(row.expansion_opportunity_id) : null,
+    title: String(row.title), engagementType: row.engagement_type as OutcomeReport["engagementType"], status: row.status as OutcomeReport["status"],
+    periodStart: String(row.period_start), periodEnd: String(row.period_end), executiveSummary: String(row.executive_summary),
+    baselineSummary: String(row.baseline_summary), outcomesSummary: String(row.outcomes_summary), recommendations: String(row.recommendations),
+    clientApproved: Boolean(row.client_approved), approvedBy: row.approved_by ? String(row.approved_by) : null,
+    approvedAt: row.approved_at ? String(row.approved_at) : null, publishedAt: row.published_at ? String(row.published_at) : null,
+    createdBy: row.created_by ? String(row.created_by) : null, createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToOutcomeMetric(row: Row): OutcomeMetric {
+  return {
+    id: String(row.id), outcomeReportId: String(row.outcome_report_id), name: String(row.name), unit: String(row.unit),
+    baselineValue: Number(row.baseline_value), currentValue: Number(row.current_value), targetValue: row.target_value === null ? null : Number(row.target_value),
+    direction: row.direction as OutcomeMetric["direction"], evidenceSource: String(row.evidence_source), verified: Boolean(row.verified),
+    sortOrder: Number(row.sort_order), createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToCaseStudy(row: Row): CaseStudy {
+  return {
+    id: String(row.id), outcomeReportId: String(row.outcome_report_id), slug: String(row.slug), title: String(row.title),
+    clientDisplayName: String(row.client_display_name), industry: String(row.industry), summary: String(row.summary), challenge: String(row.challenge),
+    intervention: String(row.intervention), result: String(row.result), evidenceNote: String(row.evidence_note), status: row.status as CaseStudy["status"],
+    featured: Boolean(row.featured), publicationConsent: Boolean(row.publication_consent), publishedAt: row.published_at ? String(row.published_at) : null,
+    createdBy: row.created_by ? String(row.created_by) : null, createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToTestimonial(row: Row): Testimonial {
+  return {
+    id: String(row.id), accountId: row.account_id ? String(row.account_id) : null, caseStudyId: row.case_study_id ? String(row.case_study_id) : null,
+    quote: String(row.quote), attributionName: String(row.attribution_name), attributionTitle: String(row.attribution_title),
+    attributionCompany: String(row.attribution_company), permission: row.permission as Testimonial["permission"], source: String(row.source),
+    status: row.status as Testimonial["status"], collectedAt: String(row.collected_at), publishedAt: row.published_at ? String(row.published_at) : null,
+    createdBy: row.created_by ? String(row.created_by) : null, createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToRoleSpecialisation(row: Row): RoleSpecialisation {
+  return {
+    id: String(row.id), slug: String(row.slug), name: String(row.name), operatorType: row.operator_type as RoleSpecialisation["operatorType"],
+    targetDepartment: String(row.target_department), promise: String(row.promise),
+    responsibilities: Array.isArray(row.responsibilities) ? row.responsibilities.map(String) : [], approvedTools: Array.isArray(row.approved_tools) ? row.approved_tools.map(String) : [],
+    successMetrics: Array.isArray(row.success_metrics) ? row.success_metrics.map(String) : [], readinessRequirements: String(row.readiness_requirements),
+    targetHoursSavedMonth: Number(row.target_hours_saved_month), status: row.status as RoleSpecialisation["status"],
+    ownerId: row.owner_id ? String(row.owner_id) : null, createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToPartnership(row: Row): Partnership {
+  return {
+    id: String(row.id), organizationName: String(row.organization_name), type: row.type as Partnership["type"], status: row.status as Partnership["status"],
+    contactName: String(row.contact_name), contactEmail: String(row.contact_email), contactPhone: String(row.contact_phone), website: String(row.website),
+    valueProposition: String(row.value_proposition), nextStep: String(row.next_step), nextStepDueAt: row.next_step_due_at ? String(row.next_step_due_at) : null,
+    ownerId: row.owner_id ? String(row.owner_id) : null, createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToPartnerReferral(row: Row): PartnerReferral {
+  return {
+    id: String(row.id), partnershipId: String(row.partnership_id), accountId: row.account_id ? String(row.account_id) : null,
+    opportunityId: row.opportunity_id ? String(row.opportunity_id) : null, contactName: String(row.contact_name), companyName: String(row.company_name),
+    status: row.status as PartnerReferral["status"], estimatedValueAed: Number(row.estimated_value_aed), notes: String(row.notes),
+    referredAt: String(row.referred_at), convertedAt: row.converted_at ? String(row.converted_at) : null,
+    createdBy: row.created_by ? String(row.created_by) : null, createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToRepeatabilityBenchmark(row: Row): RepeatabilityBenchmark {
+  return {
+    id: String(row.id), specialisationId: row.specialisation_id ? String(row.specialisation_id) : null,
+    engagementType: row.engagement_type as RepeatabilityBenchmark["engagementType"], industry: String(row.industry), metricName: String(row.metric_name),
+    unit: String(row.unit), sampleSize: Number(row.sample_size), medianBaseline: Number(row.median_baseline), medianResult: Number(row.median_result),
+    improvementPercent: Number(row.improvement_percent), evidenceThreshold: Number(row.evidence_threshold), status: row.status as RepeatabilityBenchmark["status"],
+    reviewedBy: row.reviewed_by ? String(row.reviewed_by) : null, reviewedAt: row.reviewed_at ? String(row.reviewed_at) : null,
+    createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
 function applicationToRow(item: Application) {
   return {
     id: item.id, application_number: item.number, full_name: item.fullName, email: item.email, phone: item.phone, location: item.location,
@@ -383,6 +475,38 @@ function operatorQualityReviewToRow(item: OperatorQualityReview) {
   return { id: item.id, deployment_id: item.deploymentId, operator_id: item.operatorId, review_date: item.reviewDate, period_start: item.periodStart, period_end: item.periodEnd, reviewer_id: item.reviewerId, quality_score: item.qualityScore, reliability_score: item.reliabilityScore, responsible_ai_score: item.responsibleAiScore, client_satisfaction_score: item.clientSatisfactionScore, utilisation_percent: item.utilisationPercent, hours_worked: item.hoursWorked, hours_saved: item.hoursSaved, risk_incidents: item.riskIncidents, client_feedback: item.clientFeedback, strengths: item.strengths, actions: item.actions, outcome: item.outcome, created_at: item.createdAt };
 }
 
+function outcomeReportToRow(item: OutcomeReport) {
+  return { id: item.id, report_number: item.reportNumber, account_id: item.accountId, opportunity_id: item.opportunityId, deployment_id: item.deploymentId, cohort_id: item.cohortId, expansion_opportunity_id: item.expansionOpportunityId, title: item.title, engagement_type: item.engagementType, status: item.status, period_start: item.periodStart, period_end: item.periodEnd, executive_summary: item.executiveSummary, baseline_summary: item.baselineSummary, outcomes_summary: item.outcomesSummary, recommendations: item.recommendations, client_approved: item.clientApproved, approved_by: item.approvedBy, approved_at: item.approvedAt, published_at: item.publishedAt, created_by: item.createdBy, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function outcomeMetricToRow(item: OutcomeMetric) {
+  return { id: item.id, outcome_report_id: item.outcomeReportId, name: item.name, unit: item.unit, baseline_value: item.baselineValue, current_value: item.currentValue, target_value: item.targetValue, direction: item.direction, evidence_source: item.evidenceSource, verified: item.verified, sort_order: item.sortOrder, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function caseStudyToRow(item: CaseStudy) {
+  return { id: item.id, outcome_report_id: item.outcomeReportId, slug: item.slug, title: item.title, client_display_name: item.clientDisplayName, industry: item.industry, summary: item.summary, challenge: item.challenge, intervention: item.intervention, result: item.result, evidence_note: item.evidenceNote, status: item.status, featured: item.featured, publication_consent: item.publicationConsent, published_at: item.publishedAt, created_by: item.createdBy, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function testimonialToRow(item: Testimonial) {
+  return { id: item.id, account_id: item.accountId, case_study_id: item.caseStudyId, quote: item.quote, attribution_name: item.attributionName, attribution_title: item.attributionTitle, attribution_company: item.attributionCompany, permission: item.permission, source: item.source, status: item.status, collected_at: item.collectedAt, published_at: item.publishedAt, created_by: item.createdBy, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function roleSpecialisationToRow(item: RoleSpecialisation) {
+  return { id: item.id, slug: item.slug, name: item.name, operator_type: item.operatorType, target_department: item.targetDepartment, promise: item.promise, responsibilities: item.responsibilities, approved_tools: item.approvedTools, success_metrics: item.successMetrics, readiness_requirements: item.readinessRequirements, target_hours_saved_month: item.targetHoursSavedMonth, status: item.status, owner_id: item.ownerId, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function partnershipToRow(item: Partnership) {
+  return { id: item.id, organization_name: item.organizationName, type: item.type, status: item.status, contact_name: item.contactName, contact_email: item.contactEmail, contact_phone: item.contactPhone, website: item.website, value_proposition: item.valueProposition, next_step: item.nextStep, next_step_due_at: item.nextStepDueAt, owner_id: item.ownerId, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function partnerReferralToRow(item: PartnerReferral) {
+  return { id: item.id, partnership_id: item.partnershipId, account_id: item.accountId, opportunity_id: item.opportunityId, contact_name: item.contactName, company_name: item.companyName, status: item.status, estimated_value_aed: item.estimatedValueAed, notes: item.notes, referred_at: item.referredAt, converted_at: item.convertedAt, created_by: item.createdBy, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function repeatabilityBenchmarkToRow(item: RepeatabilityBenchmark) {
+  return { id: item.id, specialisation_id: item.specialisationId, engagement_type: item.engagementType, industry: item.industry, metric_name: item.metricName, unit: item.unit, sample_size: item.sampleSize, median_baseline: item.medianBaseline, median_result: item.medianResult, improvement_percent: item.improvementPercent, evidence_threshold: item.evidenceThreshold, status: item.status, reviewed_by: item.reviewedBy, reviewed_at: item.reviewedAt, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
 function changedItems<T extends { id: string }>(before: T[], after: T[]) {
   const previous = new Map(before.map((item) => [item.id, JSON.stringify(item)]));
   return after.filter((item) => previous.get(item.id) !== JSON.stringify(item));
@@ -395,7 +519,7 @@ async function requireRows(table: string, result: { data: unknown[] | null; erro
 
 export async function readSupabaseDatabase(): Promise<DatabaseSchema> {
   const client = createSupabaseAdminClient();
-  const [profilesResult, applicationsResult, cohortsResult, enrollmentsResult, modulesResult, cohortModulesResult, sessionsResult, attendanceResult, componentsResult, submissionsResult, resultsResult, credentialsResult, accountsResult, opportunitiesResult, readinessResult, workflowsResult, proposalsResult, workshopsResult, operatorsResult, onboardingResult, matchesResult, deploymentsResult, sopsResult, qualityResult, activitiesResult] = await Promise.all([
+  const [profilesResult, applicationsResult, cohortsResult, enrollmentsResult, modulesResult, cohortModulesResult, sessionsResult, attendanceResult, componentsResult, submissionsResult, resultsResult, credentialsResult, accountsResult, opportunitiesResult, readinessResult, workflowsResult, proposalsResult, workshopsResult, operatorsResult, onboardingResult, matchesResult, deploymentsResult, sopsResult, qualityResult, outcomeReportsResult, outcomeMetricsResult, caseStudiesResult, testimonialsResult, specialisationsResult, partnershipsResult, referralsResult, benchmarksResult, activitiesResult] = await Promise.all([
     client.from("profiles").select("*").order("created_at", { ascending: true }),
     client.from("applications").select("*").order("created_at", { ascending: false }),
     client.from("cohorts").select("*").order("start_date", { ascending: true }),
@@ -420,6 +544,14 @@ export async function readSupabaseDatabase(): Promise<DatabaseSchema> {
     client.from("workforce_deployments").select("*").order("starts_on", { ascending: false }),
     client.from("client_sops").select("*").order("updated_at", { ascending: false }),
     client.from("operator_quality_reviews").select("*").order("review_date", { ascending: false }),
+    client.from("outcome_reports").select("*").order("period_end", { ascending: false }),
+    client.from("outcome_metrics").select("*").order("sort_order", { ascending: true }),
+    client.from("case_studies").select("*").order("updated_at", { ascending: false }),
+    client.from("testimonials").select("*").order("collected_at", { ascending: false }),
+    client.from("role_specialisations").select("*").order("name", { ascending: true }),
+    client.from("partnerships").select("*").order("updated_at", { ascending: false }),
+    client.from("partner_referrals").select("*").order("referred_at", { ascending: false }),
+    client.from("repeatability_benchmarks").select("*").order("sample_size", { ascending: false }),
     client.from("activities").select("*").order("created_at", { ascending: false }).limit(500),
   ]);
   const profiles = await requireRows("profiles", profilesResult);
@@ -446,6 +578,14 @@ export async function readSupabaseDatabase(): Promise<DatabaseSchema> {
   const deployments = await requireRows("workforce_deployments", deploymentsResult);
   const sops = await requireRows("client_sops", sopsResult);
   const quality = await requireRows("operator_quality_reviews", qualityResult);
+  const outcomeReports = await requireRows("outcome_reports", outcomeReportsResult);
+  const outcomeMetrics = await requireRows("outcome_metrics", outcomeMetricsResult);
+  const caseStudies = await requireRows("case_studies", caseStudiesResult);
+  const testimonials = await requireRows("testimonials", testimonialsResult);
+  const specialisations = await requireRows("role_specialisations", specialisationsResult);
+  const partnerships = await requireRows("partnerships", partnershipsResult);
+  const referrals = await requireRows("partner_referrals", referralsResult);
+  const benchmarks = await requireRows("repeatability_benchmarks", benchmarksResult);
   const activities = await requireRows("activities", activitiesResult);
   return {
     users: profiles.map(profileToUser), sessions: [], applications: applications.map(rowToApplication), cohorts: cohorts.map(rowToCohort),
@@ -458,6 +598,10 @@ export async function readSupabaseDatabase(): Promise<DatabaseSchema> {
     workforceOperators: operators.map(rowToWorkforceOperator), operatorOnboardingItems: onboarding.map(rowToOperatorOnboardingItem),
     workforceMatches: matches.map(rowToWorkforceMatch), workforceDeployments: deployments.map(rowToWorkforceDeployment),
     clientSops: sops.map(rowToClientSop), operatorQualityReviews: quality.map(rowToOperatorQualityReview),
+    outcomeReports: outcomeReports.map(rowToOutcomeReport), outcomeMetrics: outcomeMetrics.map(rowToOutcomeMetric),
+    caseStudies: caseStudies.map(rowToCaseStudy), testimonials: testimonials.map(rowToTestimonial),
+    roleSpecialisations: specialisations.map(rowToRoleSpecialisation), partnerships: partnerships.map(rowToPartnership),
+    partnerReferrals: referrals.map(rowToPartnerReferral), repeatabilityBenchmarks: benchmarks.map(rowToRepeatabilityBenchmark),
     activities: activities.map(rowToActivity),
   };
 }
@@ -497,6 +641,14 @@ export async function updateSupabaseDatabase<T>(operation: (data: DatabaseSchema
   await upsertRows("workforce_deployments", changedItems(before.workforceDeployments, after.workforceDeployments).map(workforceDeploymentToRow));
   await upsertRows("client_sops", changedItems(before.clientSops, after.clientSops).map(clientSopToRow));
   await upsertRows("operator_quality_reviews", changedItems(before.operatorQualityReviews, after.operatorQualityReviews).map(operatorQualityReviewToRow));
+  await upsertRows("outcome_reports", changedItems(before.outcomeReports, after.outcomeReports).map(outcomeReportToRow));
+  await upsertRows("outcome_metrics", changedItems(before.outcomeMetrics, after.outcomeMetrics).map(outcomeMetricToRow));
+  await upsertRows("case_studies", changedItems(before.caseStudies, after.caseStudies).map(caseStudyToRow));
+  await upsertRows("testimonials", changedItems(before.testimonials, after.testimonials).map(testimonialToRow));
+  await upsertRows("role_specialisations", changedItems(before.roleSpecialisations, after.roleSpecialisations).map(roleSpecialisationToRow));
+  await upsertRows("partnerships", changedItems(before.partnerships, after.partnerships).map(partnershipToRow));
+  await upsertRows("partner_referrals", changedItems(before.partnerReferrals, after.partnerReferrals).map(partnerReferralToRow));
+  await upsertRows("repeatability_benchmarks", changedItems(before.repeatabilityBenchmarks, after.repeatabilityBenchmarks).map(repeatabilityBenchmarkToRow));
   await upsertRows("activities", changedItems(before.activities, after.activities).map(activityToRow));
   return result;
 }

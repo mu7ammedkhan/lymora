@@ -448,11 +448,173 @@ export type OperatorQualityReview = {
   createdAt: string;
 };
 
+export type ProofContentStatus = "draft" | "review" | "approved" | "published";
+export type ProofEngagementType = "academy" | "team_enablement" | "workforce" | "workflow_implementation";
+export type MetricDirection = "increase" | "decrease" | "maintain";
+export type TestimonialPermission = "pending" | "approved" | "declined";
+export type RoleSpecialisationStatus = "draft" | "pilot" | "proven" | "retired";
+export type PartnershipType = "business_community" | "training_provider" | "professional_association" | "recruiter" | "technology_provider" | "referral_partner";
+export type PartnershipStatus = "prospect" | "conversation" | "active" | "paused" | "closed";
+export type PartnerReferralStatus = "referred" | "qualified" | "converted" | "lost";
+export type BenchmarkStatus = "emerging" | "validated" | "reference";
+
+export type OutcomeReport = {
+  id: string;
+  reportNumber: string;
+  accountId: string | null;
+  opportunityId: string | null;
+  deploymentId: string | null;
+  cohortId: string | null;
+  expansionOpportunityId: string | null;
+  title: string;
+  engagementType: ProofEngagementType;
+  status: ProofContentStatus;
+  periodStart: string;
+  periodEnd: string;
+  executiveSummary: string;
+  baselineSummary: string;
+  outcomesSummary: string;
+  recommendations: string;
+  clientApproved: boolean;
+  approvedBy: string | null;
+  approvedAt: string | null;
+  publishedAt: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OutcomeMetric = {
+  id: string;
+  outcomeReportId: string;
+  name: string;
+  unit: string;
+  baselineValue: number;
+  currentValue: number;
+  targetValue: number | null;
+  direction: MetricDirection;
+  evidenceSource: string;
+  verified: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CaseStudy = {
+  id: string;
+  outcomeReportId: string;
+  slug: string;
+  title: string;
+  clientDisplayName: string;
+  industry: string;
+  summary: string;
+  challenge: string;
+  intervention: string;
+  result: string;
+  evidenceNote: string;
+  status: ProofContentStatus;
+  featured: boolean;
+  publicationConsent: boolean;
+  publishedAt: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Testimonial = {
+  id: string;
+  accountId: string | null;
+  caseStudyId: string | null;
+  quote: string;
+  attributionName: string;
+  attributionTitle: string;
+  attributionCompany: string;
+  permission: TestimonialPermission;
+  source: string;
+  status: ProofContentStatus;
+  collectedAt: string;
+  publishedAt: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RoleSpecialisation = {
+  id: string;
+  slug: string;
+  name: string;
+  operatorType: WorkforceOperatorType;
+  targetDepartment: string;
+  promise: string;
+  responsibilities: string[];
+  approvedTools: string[];
+  successMetrics: string[];
+  readinessRequirements: string;
+  targetHoursSavedMonth: number;
+  status: RoleSpecialisationStatus;
+  ownerId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Partnership = {
+  id: string;
+  organizationName: string;
+  type: PartnershipType;
+  status: PartnershipStatus;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  website: string;
+  valueProposition: string;
+  nextStep: string;
+  nextStepDueAt: string | null;
+  ownerId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PartnerReferral = {
+  id: string;
+  partnershipId: string;
+  accountId: string | null;
+  opportunityId: string | null;
+  contactName: string;
+  companyName: string;
+  status: PartnerReferralStatus;
+  estimatedValueAed: number;
+  notes: string;
+  referredAt: string;
+  convertedAt: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RepeatabilityBenchmark = {
+  id: string;
+  specialisationId: string | null;
+  engagementType: ProofEngagementType;
+  industry: string;
+  metricName: string;
+  unit: string;
+  sampleSize: number;
+  medianBaseline: number;
+  medianResult: number;
+  improvementPercent: number;
+  evidenceThreshold: number;
+  status: BenchmarkStatus;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Activity = {
   id: string;
   actorId: string | null;
   action: string;
-  entityType: "application" | "cohort" | "enrollment" | "session" | "user" | "assessment" | "credential" | "account" | "opportunity" | "diagnostic" | "proposal" | "workshop" | "operator" | "match" | "deployment" | "sop" | "quality_review";
+  entityType: "application" | "cohort" | "enrollment" | "session" | "user" | "assessment" | "credential" | "account" | "opportunity" | "diagnostic" | "proposal" | "workshop" | "operator" | "match" | "deployment" | "sop" | "quality_review" | "outcome_report" | "case_study" | "testimonial" | "specialisation" | "partnership" | "referral" | "benchmark";
   entityId: string;
   detail: string;
   createdAt: string;
@@ -484,6 +646,14 @@ export type DatabaseSchema = {
   workforceDeployments: WorkforceDeployment[];
   clientSops: ClientSop[];
   operatorQualityReviews: OperatorQualityReview[];
+  outcomeReports: OutcomeReport[];
+  outcomeMetrics: OutcomeMetric[];
+  caseStudies: CaseStudy[];
+  testimonials: Testimonial[];
+  roleSpecialisations: RoleSpecialisation[];
+  partnerships: Partnership[];
+  partnerReferrals: PartnerReferral[];
+  repeatabilityBenchmarks: RepeatabilityBenchmark[];
   activities: Activity[];
 };
 

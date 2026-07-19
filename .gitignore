@@ -6,6 +6,7 @@ out
 !.env.example
 .DS_Store
 *.log
+*.tsbuildinfo
 data/*.json
 data/*.tmp
 package-lock.internal-mirror.json

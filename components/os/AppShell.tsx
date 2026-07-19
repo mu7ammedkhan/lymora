@@ -8,6 +8,7 @@ import {
   BookOpenCheck,
   BriefcaseBusiness,
   Building2,
+  ChartNoAxesCombined,
   ChevronDown,
   LayoutDashboard,
   LogOut,
@@ -28,6 +29,7 @@ const staffNavigation = [
   { label: "Cohorts", href: "/app/cohorts", icon: BookOpenCheck, roles: ["super_admin", "academy_ops", "assessor"] },
   { label: "Corporate", href: "/app/corporate", icon: Building2, roles: ["super_admin", "academy_ops"] },
   { label: "Workforce", href: "/app/workforce", icon: BriefcaseBusiness, roles: ["super_admin", "academy_ops", "talent_ops"] },
+  { label: "Proof & Expansion", href: "/app/proof", icon: ChartNoAxesCombined, roles: ["super_admin", "academy_ops", "talent_ops"] },
   { label: "Team", href: "/app/team", icon: Users, roles: ["super_admin"] },
   { label: "Activity", href: "/app/activity", icon: Activity, roles: ["super_admin", "academy_ops", "talent_ops"] },
   { label: "Settings", href: "/app/settings", icon: Settings, roles: ["super_admin"] },
@@ -43,6 +45,12 @@ const operatorNavigation = [
 ] as const;
 
 function getPageTitle(pathname: string) {
+  if (pathname.includes("/proof/reports/") && !pathname.endsWith("/new")) return "Outcome report";
+  if (pathname.endsWith("/proof/reports/new")) return "New outcome report";
+  if (pathname.startsWith("/app/proof/partnerships")) return "Partnership growth";
+  if (pathname.startsWith("/app/proof/specialisations")) return "Role specialisations";
+  if (pathname.startsWith("/app/proof/reports")) return "Outcome reports";
+  if (pathname.startsWith("/app/proof")) return "Proof & Expansion";
   if (pathname === "/app/workforce/me") return "My deployment";
   if (pathname.includes("/workforce/deployments/")) return "Deployment control";
   if (pathname.includes("/workforce/operators/")) return "Operator record";
@@ -106,7 +114,7 @@ export function AppShell({ user, children }: { user: SafeUser; children: React.R
 
         <div className="os-sidebar-foot">
           <div className="os-system-status"><i /> All systems operational</div>
-          <span>Phase 4 - Workforce pilot</span>
+          <span>Phase 5 - Proof and expansion</span>
         </div>
       </aside>
 
@@ -117,16 +125,16 @@ export function AppShell({ user, children }: { user: SafeUser; children: React.R
           <div className="os-topbar-left">
             <button type="button" className="os-icon-button os-menu-trigger" aria-label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={19} /></button>
             <div>
-              <span className="os-topbar-kicker">{pathname.startsWith("/app/workforce") ? "Lymora Workforce" : pathname.startsWith("/app/corporate") ? "Lymora Corporate" : "Lymora Academy"}</span>
+              <span className="os-topbar-kicker">{pathname.startsWith("/app/proof") ? "Lymora Evidence" : pathname.startsWith("/app/workforce") ? "Lymora Workforce" : pathname.startsWith("/app/corporate") ? "Lymora Corporate" : "Lymora Academy"}</span>
               <strong>{getPageTitle(pathname)}</strong>
             </div>
           </div>
 
           <div className="os-topbar-actions">
             {!["candidate", "operator"].includes(user.role) && (
-              <form className="os-global-search" action={pathname.startsWith("/app/workforce") ? "/app/workforce/operators" : pathname.startsWith("/app/corporate") ? "/app/corporate" : "/app/admissions"}>
+              <form className="os-global-search" action={pathname.startsWith("/app/proof") ? "/app/proof/reports" : pathname.startsWith("/app/workforce") ? "/app/workforce/operators" : pathname.startsWith("/app/corporate") ? "/app/corporate" : "/app/admissions"}>
                 <Search size={16} />
-                <input name="q" aria-label={pathname.startsWith("/app/workforce") ? "Search operators" : pathname.startsWith("/app/corporate") ? "Search accounts" : "Search applicants"} placeholder={pathname.startsWith("/app/workforce") ? "Search operators" : pathname.startsWith("/app/corporate") ? "Search accounts" : "Search applicants"} />
+                <input name="q" aria-label={pathname.startsWith("/app/proof") ? "Search proof" : pathname.startsWith("/app/workforce") ? "Search operators" : pathname.startsWith("/app/corporate") ? "Search accounts" : "Search applicants"} placeholder={pathname.startsWith("/app/proof") ? "Search proof" : pathname.startsWith("/app/workforce") ? "Search operators" : pathname.startsWith("/app/corporate") ? "Search accounts" : "Search applicants"} />
               </form>
             )}
             <div className="os-profile-wrap">

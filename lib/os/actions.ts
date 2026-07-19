@@ -18,6 +18,7 @@ import type { CorporatePackage } from "@/lib/os/types";
 const staffRoles = ["super_admin", "academy_ops", "assessor"] as const;
 const corporateRoles = ["super_admin", "academy_ops"] as const;
 const workforceRoles = ["super_admin", "academy_ops", "talent_ops"] as const;
+const proofRoles = ["super_admin", "academy_ops", "talent_ops"] as const;
 
 export async function updateApplicationAction(formData: FormData) {
   const user = await requireRole([...staffRoles]);
@@ -820,4 +821,293 @@ export async function createOperatorQualityReviewAction(formData: FormData) {
   });
   revalidatePath("/app/workforce");
   revalidatePath(`/app/workforce/deployments/${parsed.data.deploymentId}`);
+}
+
+const proofContentStatuses = ["draft", "review", "approved", "published"] as const;
+const proofEngagementTypes = ["academy", "team_enablement", "workforce", "workflow_implementation"] as const;
+const corporatePackageValues = ["team_enablement_15", "team_enablement_30", "private_caio", "enterprise"] as const;
+const commaList = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
+
+export async function createOutcomeReportAction(formData: FormData) {
+  const user = await requireRole([...proofRoles]);
+  const parsed = z.object({
+    accountId: z.string().uuid().optional(), opportunityId: z.string().uuid().optional(), deploymentId: z.string().uuid().optional(), cohortId: z.string().min(1).optional(),
+    title: z.string().min(3).max(200), engagementType: z.enum(proofEngagementTypes), status: z.enum(proofContentStatuses),
+    periodStart: z.string().min(10), periodEnd: z.string().min(10), executiveSummary: z.string().max(10000), baselineSummary: z.string().max(10000),
+    outcomesSummary: z.string().max(10000), recommendations: z.string().max(10000), clientApproved: z.boolean(),
+  }).refine((data) => data.accountId || data.opportunityId || data.deploymentId || data.cohortId, { message: "Select an engagement" })
+    .refine((data) => data.periodEnd >= data.periodStart, { message: "Period end must follow period start" })
+    .refine((data) => data.status !== "published" || data.clientApproved, { message: "Client approval is required to publish" })
+    .safeParse({
+      accountId: formData.get("accountId") || undefined, opportunityId: formData.get("opportunityId") || undefined,
+      deploymentId: formData.get("deploymentId") || undefined, cohortId: formData.get("cohortId") || undefined,
+      title: formData.get("title"), engagementType: formData.get("engagementType"), status: formData.get("status"),
+      periodStart: formData.get("periodStart"), periodEnd: formData.get("periodEnd"), executiveSummary: formData.get("executiveSummary") || "",
+      baselineSummary: formData.get("baselineSummary") || "", outcomesSummary: formData.get("outcomesSummary") || "",
+      recommendations: formData.get("recommendations") || "", clientApproved: formData.get("clientApproved") === "on",
+    });
+  if (!parsed.success) redirect("/app/proof/reports/new?error=invalid");
+  const reportId = randomUUID();
+  await updateDatabase((database) => {
+    const sequence = Math.max(26000, ...database.outcomeReports.map((item) => Number(item.reportNumber.replace(/\D/g, "")) || 0)) + 1;
+    const now = new Date().toISOString();
+    const approved = ["approved", "published"].includes(parsed.data.status);
+    database.outcomeReports.unshift({
+      id: reportId, reportNumber: `LYM-OUT-${sequence}`, ...parsed.data, accountId: parsed.data.accountId ?? null,
+      opportunityId: parsed.data.opportunityId ?? null, deploymentId: parsed.data.deploymentId ?? null, cohortId: parsed.data.cohortId ?? null,
+      expansionOpportunityId: null, approvedBy: approved ? user.id : null, approvedAt: approved ? now : null,
+      publishedAt: parsed.data.status === "published" ? now : null, createdBy: user.id, createdAt: now, updatedAt: now,
+    });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proof.report_created", entityType: "outcome_report", entityId: reportId, detail: `Created ${parsed.data.title}`, createdAt: now });
+  });
+  redirect(`/app/proof/reports/${reportId}`);
+}
+
+export async function updateOutcomeReportAction(formData: FormData) {
+  const user = await requireRole([...proofRoles]);
+  const parsed = z.object({
+    reportId: z.string().uuid(), title: z.string().min(3).max(200), status: z.enum(proofContentStatuses), periodStart: z.string().min(10),
+    periodEnd: z.string().min(10), executiveSummary: z.string().max(10000), baselineSummary: z.string().max(10000), outcomesSummary: z.string().max(10000),
+    recommendations: z.string().max(10000), clientApproved: z.boolean(),
+  }).refine((data) => data.periodEnd >= data.periodStart, { message: "Invalid period" })
+    .refine((data) => data.status !== "published" || data.clientApproved, { message: "Approval required" })
+    .safeParse({ ...Object.fromEntries(formData), clientApproved: formData.get("clientApproved") === "on" });
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const report = database.outcomeReports.find((item) => item.id === parsed.data.reportId);
+    if (!report) return;
+    const now = new Date().toISOString();
+    const approved = ["approved", "published"].includes(parsed.data.status);
+    const { reportId: _reportId, ...updates } = parsed.data;
+    Object.assign(report, updates, {
+      approvedBy: approved ? report.approvedBy ?? user.id : null, approvedAt: approved ? report.approvedAt ?? now : null,
+      publishedAt: parsed.data.status === "published" ? report.publishedAt ?? now : null, updatedAt: now,
+    });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proof.report_updated", entityType: "outcome_report", entityId: report.id, detail: `Updated ${report.reportNumber} to ${report.status}`, createdAt: now });
+  });
+  revalidatePath("/app/proof");
+  revalidatePath(`/app/proof/reports/${parsed.data.reportId}`);
+}
+
+export async function addOutcomeMetricAction(formData: FormData) {
+  const user = await requireRole([...proofRoles]);
+  const parsed = z.object({
+    reportId: z.string().uuid(), name: z.string().min(2).max(120), unit: z.string().min(1).max(40), baselineValue: z.coerce.number(),
+    currentValue: z.coerce.number(), targetValue: z.coerce.number().optional(), direction: z.enum(["increase", "decrease", "maintain"]),
+    evidenceSource: z.string().max(2000), verified: z.boolean(),
+  }).safeParse({ ...Object.fromEntries(formData), targetValue: formData.get("targetValue") || undefined, verified: formData.get("verified") === "on" });
+  if (!parsed.success) return;
+  const metricId = randomUUID();
+  await updateDatabase((database) => {
+    const report = database.outcomeReports.find((item) => item.id === parsed.data.reportId);
+    if (!report) return;
+    const now = new Date().toISOString();
+    const sortOrder = Math.max(0, ...database.outcomeMetrics.filter((item) => item.outcomeReportId === report.id).map((item) => item.sortOrder)) + 10;
+    const { reportId: _reportId, ...metric } = parsed.data;
+    database.outcomeMetrics.push({ id: metricId, outcomeReportId: report.id, ...metric, targetValue: metric.targetValue ?? null, sortOrder, createdAt: now, updatedAt: now });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proof.metric_added", entityType: "outcome_report", entityId: report.id, detail: `Added ${parsed.data.name} evidence`, createdAt: now });
+  });
+  revalidatePath(`/app/proof/reports/${parsed.data.reportId}`);
+}
+
+export async function saveCaseStudyAction(formData: FormData) {
+  const user = await requireRole([...proofRoles]);
+  const parsed = z.object({
+    reportId: z.string().uuid(), caseStudyId: z.string().uuid().optional(), slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    title: z.string().min(3).max(200), clientDisplayName: z.string().min(2).max(160), industry: z.string().max(120), summary: z.string().max(3000),
+    challenge: z.string().max(10000), intervention: z.string().max(10000), result: z.string().max(10000), evidenceNote: z.string().max(4000),
+    status: z.enum(proofContentStatuses), featured: z.boolean(), publicationConsent: z.boolean(),
+  }).refine((data) => data.status !== "published" || data.publicationConsent, { message: "Consent required" }).safeParse({
+    ...Object.fromEntries(formData), caseStudyId: formData.get("caseStudyId") || undefined,
+    featured: formData.get("featured") === "on", publicationConsent: formData.get("publicationConsent") === "on",
+  });
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    if (!database.outcomeReports.some((item) => item.id === parsed.data.reportId)) return;
+    const now = new Date().toISOString();
+    const existing = parsed.data.caseStudyId
+      ? database.caseStudies.find((item) => item.id === parsed.data.caseStudyId && item.outcomeReportId === parsed.data.reportId)
+      : database.caseStudies.find((item) => item.outcomeReportId === parsed.data.reportId);
+    const { reportId: _reportId, caseStudyId: _caseStudyId, ...caseStudy } = parsed.data;
+    if (existing) {
+      Object.assign(existing, caseStudy, { outcomeReportId: parsed.data.reportId, publishedAt: caseStudy.status === "published" ? existing.publishedAt ?? now : null, updatedAt: now });
+    } else {
+      const id = randomUUID();
+      database.caseStudies.unshift({ id, outcomeReportId: parsed.data.reportId, ...caseStudy, publishedAt: caseStudy.status === "published" ? now : null, createdBy: user.id, createdAt: now, updatedAt: now });
+    }
+    const saved = existing ?? database.caseStudies[0];
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proof.case_study_saved", entityType: "case_study", entityId: saved.id, detail: `Saved ${parsed.data.title}`, createdAt: now });
+  });
+  revalidatePath("/app/proof");
+  revalidatePath(`/app/proof/reports/${parsed.data.reportId}`);
+}
+
+export async function createTestimonialAction(formData: FormData) {
+  const user = await requireRole([...proofRoles]);
+  const parsed = z.object({
+    reportId: z.string().uuid(), accountId: z.string().uuid().optional(), caseStudyId: z.string().uuid().optional(), quote: z.string().min(10).max(3000),
+    attributionName: z.string().min(2).max(120), attributionTitle: z.string().max(120), attributionCompany: z.string().max(160),
+    permission: z.enum(["pending", "approved", "declined"]), source: z.string().max(300), status: z.enum(proofContentStatuses), collectedAt: z.string().min(10),
+  }).refine((data) => data.status !== "published" || data.permission === "approved", { message: "Permission required" }).safeParse({
+    ...Object.fromEntries(formData), accountId: formData.get("accountId") || undefined, caseStudyId: formData.get("caseStudyId") || undefined,
+  });
+  if (!parsed.success) return;
+  const testimonialId = randomUUID();
+  await updateDatabase((database) => {
+    if (!database.outcomeReports.some((item) => item.id === parsed.data.reportId)) return;
+    const now = new Date().toISOString();
+    const { reportId: _reportId, ...testimonial } = parsed.data;
+    database.testimonials.unshift({ id: testimonialId, ...testimonial, accountId: testimonial.accountId ?? null, caseStudyId: testimonial.caseStudyId ?? null, publishedAt: testimonial.status === "published" ? now : null, createdBy: user.id, createdAt: now, updatedAt: now });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proof.testimonial_created", entityType: "testimonial", entityId: testimonialId, detail: `Recorded testimonial permission as ${parsed.data.permission}`, createdAt: now });
+  });
+  revalidatePath("/app/proof");
+  revalidatePath(`/app/proof/reports/${parsed.data.reportId}`);
+}
+
+export async function updateTestimonialAction(formData: FormData) {
+  const user = await requireRole([...proofRoles]);
+  const parsed = z.object({ reportId: z.string().uuid(), testimonialId: z.string().uuid(), permission: z.enum(["pending", "approved", "declined"]), status: z.enum(proofContentStatuses) })
+    .refine((data) => data.status !== "published" || data.permission === "approved", { message: "Permission required" }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const testimonial = database.testimonials.find((item) => item.id === parsed.data.testimonialId);
+    if (!testimonial) return;
+    const now = new Date().toISOString();
+    testimonial.permission = parsed.data.permission;
+    testimonial.status = parsed.data.status;
+    testimonial.publishedAt = testimonial.status === "published" ? testimonial.publishedAt ?? now : null;
+    testimonial.updatedAt = now;
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proof.testimonial_updated", entityType: "testimonial", entityId: testimonial.id, detail: `Set testimonial to ${testimonial.permission} / ${testimonial.status}`, createdAt: now });
+  });
+  revalidatePath("/app/proof");
+  revalidatePath(`/app/proof/reports/${parsed.data.reportId}`);
+}
+
+export async function createRoleSpecialisationAction(formData: FormData) {
+  const user = await requireRole([...proofRoles]);
+  const parsed = z.object({
+    slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/), name: z.string().min(3).max(160),
+    operatorType: z.enum(["executive_assistant", "marketing", "sales", "operations", "customer_experience", "recruitment"]),
+    targetDepartment: z.string().min(2).max(120), promise: z.string().min(10).max(2000), responsibilities: z.string().max(4000),
+    approvedTools: z.string().max(2000), successMetrics: z.string().max(2000), readinessRequirements: z.string().max(4000),
+    targetHoursSavedMonth: z.coerce.number().min(0).max(744), status: z.enum(["draft", "pilot", "proven", "retired"]),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  const id = randomUUID();
+  await updateDatabase((database) => {
+    const now = new Date().toISOString();
+    database.roleSpecialisations.push({ ...parsed.data, id, responsibilities: commaList(parsed.data.responsibilities), approvedTools: commaList(parsed.data.approvedTools), successMetrics: commaList(parsed.data.successMetrics), ownerId: user.id, createdAt: now, updatedAt: now });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proof.specialisation_created", entityType: "specialisation", entityId: id, detail: `Created ${parsed.data.name}`, createdAt: now });
+  });
+  revalidatePath("/app/proof");
+  revalidatePath("/app/proof/specialisations");
+}
+
+export async function updateRoleSpecialisationStatusAction(formData: FormData) {
+  const user = await requireRole([...proofRoles]);
+  const parsed = z.object({ specialisationId: z.string().uuid(), status: z.enum(["draft", "pilot", "proven", "retired"]) }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const item = database.roleSpecialisations.find((entry) => entry.id === parsed.data.specialisationId);
+    if (!item) return;
+    item.status = parsed.data.status;
+    item.updatedAt = new Date().toISOString();
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proof.specialisation_updated", entityType: "specialisation", entityId: item.id, detail: `Moved ${item.name} to ${item.status}`, createdAt: item.updatedAt });
+  });
+  revalidatePath("/app/proof/specialisations");
+}
+
+export async function createPartnershipAction(formData: FormData) {
+  const user = await requireRole([...proofRoles]);
+  const parsed = z.object({
+    organizationName: z.string().min(2).max(160), type: z.enum(["business_community", "training_provider", "professional_association", "recruiter", "technology_provider", "referral_partner"]),
+    status: z.enum(["prospect", "conversation", "active", "paused", "closed"]), contactName: z.string().max(120), contactEmail: z.string().max(160),
+    contactPhone: z.string().max(60), website: z.string().max(300), valueProposition: z.string().max(3000), nextStep: z.string().max(1000), nextStepDueAt: z.string().optional(),
+  }).safeParse({ ...Object.fromEntries(formData), nextStepDueAt: formData.get("nextStepDueAt") || undefined });
+  if (!parsed.success) return;
+  const id = randomUUID();
+  await updateDatabase((database) => {
+    const now = new Date().toISOString();
+    database.partnerships.unshift({ id, ...parsed.data, nextStepDueAt: parsed.data.nextStepDueAt ?? null, ownerId: user.id, createdAt: now, updatedAt: now });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proof.partnership_created", entityType: "partnership", entityId: id, detail: `Added ${parsed.data.organizationName}`, createdAt: now });
+  });
+  revalidatePath("/app/proof");
+  revalidatePath("/app/proof/partnerships");
+}
+
+export async function updatePartnershipAction(formData: FormData) {
+  const user = await requireRole([...proofRoles]);
+  const parsed = z.object({ partnershipId: z.string().uuid(), status: z.enum(["prospect", "conversation", "active", "paused", "closed"]), nextStep: z.string().max(1000), nextStepDueAt: z.string().optional() })
+    .safeParse({ ...Object.fromEntries(formData), nextStepDueAt: formData.get("nextStepDueAt") || undefined });
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const item = database.partnerships.find((entry) => entry.id === parsed.data.partnershipId);
+    if (!item) return;
+    const now = new Date().toISOString();
+    item.status = parsed.data.status; item.nextStep = parsed.data.nextStep; item.nextStepDueAt = parsed.data.nextStepDueAt ?? null; item.updatedAt = now;
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proof.partnership_updated", entityType: "partnership", entityId: item.id, detail: `Updated ${item.organizationName}`, createdAt: now });
+  });
+  revalidatePath("/app/proof/partnerships");
+}
+
+export async function createPartnerReferralAction(formData: FormData) {
+  const user = await requireRole([...proofRoles]);
+  const parsed = z.object({
+    partnershipId: z.string().uuid(), accountId: z.string().uuid().optional(), opportunityId: z.string().uuid().optional(), contactName: z.string().max(120),
+    companyName: z.string().min(2).max(160), status: z.enum(["referred", "qualified", "converted", "lost"]), estimatedValueAed: z.coerce.number().min(0),
+    notes: z.string().max(3000), referredAt: z.string().min(10),
+  }).safeParse({ ...Object.fromEntries(formData), accountId: formData.get("accountId") || undefined, opportunityId: formData.get("opportunityId") || undefined });
+  if (!parsed.success) return;
+  const id = randomUUID();
+  await updateDatabase((database) => {
+    if (!database.partnerships.some((item) => item.id === parsed.data.partnershipId)) return;
+    const now = new Date().toISOString();
+    database.partnerReferrals.unshift({ id, ...parsed.data, accountId: parsed.data.accountId ?? null, opportunityId: parsed.data.opportunityId ?? null, convertedAt: parsed.data.status === "converted" ? now : null, createdBy: user.id, createdAt: now, updatedAt: now });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proof.referral_created", entityType: "referral", entityId: id, detail: `Added partner referral for ${parsed.data.companyName}`, createdAt: now });
+  });
+  revalidatePath("/app/proof");
+  revalidatePath("/app/proof/partnerships");
+}
+
+export async function createRepeatabilityBenchmarkAction(formData: FormData) {
+  const user = await requireRole([...proofRoles]);
+  const parsed = z.object({
+    specialisationId: z.string().uuid().optional(), engagementType: z.enum(proofEngagementTypes), industry: z.string().min(2).max(120),
+    metricName: z.string().min(2).max(120), unit: z.string().min(1).max(40), sampleSize: z.coerce.number().int().min(1),
+    medianBaseline: z.coerce.number(), medianResult: z.coerce.number(), improvementPercent: z.coerce.number().min(-1000).max(10000),
+    evidenceThreshold: z.coerce.number().int().min(1).max(1000), status: z.enum(["emerging", "validated", "reference"]),
+  }).safeParse({ ...Object.fromEntries(formData), specialisationId: formData.get("specialisationId") || undefined });
+  if (!parsed.success) return;
+  const id = randomUUID();
+  await updateDatabase((database) => {
+    const now = new Date().toISOString();
+    database.repeatabilityBenchmarks.unshift({ id, ...parsed.data, specialisationId: parsed.data.specialisationId ?? null, reviewedBy: user.id, reviewedAt: now, createdAt: now, updatedAt: now });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proof.benchmark_created", entityType: "benchmark", entityId: id, detail: `Recorded ${parsed.data.metricName} benchmark`, createdAt: now });
+  });
+  revalidatePath("/app/proof");
+  revalidatePath("/app/proof/specialisations");
+}
+
+export async function createExpansionOpportunityAction(formData: FormData) {
+  const user = await requireRole([...proofRoles]);
+  const parsed = z.object({
+    reportId: z.string().uuid(), title: z.string().min(3).max(180), package: z.enum(corporatePackageValues), valueAed: z.coerce.number().min(0),
+    nextStep: z.string().min(3).max(1000), expectedCloseDate: z.string().optional(),
+  }).safeParse({ ...Object.fromEntries(formData), expectedCloseDate: formData.get("expectedCloseDate") || undefined });
+  if (!parsed.success) return;
+  let opportunityId = "";
+  await updateDatabase((database) => {
+    const report = database.outcomeReports.find((item) => item.id === parsed.data.reportId);
+    if (!report?.accountId || report.expansionOpportunityId) return;
+    const now = new Date().toISOString();
+    opportunityId = randomUUID();
+    database.corporateOpportunities.unshift({ id: opportunityId, accountId: report.accountId, title: parsed.data.title, package: parsed.data.package as CorporatePackage, participantCount: 1, stage: "qualified", valueAed: parsed.data.valueAed, probability: 40, expectedCloseDate: parsed.data.expectedCloseDate ?? null, nextStep: parsed.data.nextStep, nextStepDueAt: parsed.data.expectedCloseDate ?? null, ownerId: user.id, lostReason: "", createdAt: now, updatedAt: now });
+    report.expansionOpportunityId = opportunityId;
+    report.updatedAt = now;
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "proof.expansion_created", entityType: "opportunity", entityId: opportunityId, detail: `Created expansion opportunity from ${report.reportNumber}`, createdAt: now });
+  });
+  revalidatePath("/app/proof");
+  revalidatePath(`/app/proof/reports/${parsed.data.reportId}`);
+  revalidatePath("/app/corporate");
+  if (opportunityId) redirect(`/app/corporate/${opportunityId}`);
 }

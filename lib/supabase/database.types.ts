@@ -331,6 +331,84 @@ export type Database = {
           },
         ]
       }
+      case_studies: {
+        Row: {
+          challenge: string
+          client_display_name: string
+          created_at: string
+          created_by: string | null
+          evidence_note: string
+          featured: boolean
+          id: string
+          industry: string
+          intervention: string
+          outcome_report_id: string
+          publication_consent: boolean
+          published_at: string | null
+          result: string
+          slug: string
+          status: Database["public"]["Enums"]["proof_content_status"]
+          summary: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          challenge?: string
+          client_display_name: string
+          created_at?: string
+          created_by?: string | null
+          evidence_note?: string
+          featured?: boolean
+          id?: string
+          industry?: string
+          intervention?: string
+          outcome_report_id: string
+          publication_consent?: boolean
+          published_at?: string | null
+          result?: string
+          slug: string
+          status?: Database["public"]["Enums"]["proof_content_status"]
+          summary?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          challenge?: string
+          client_display_name?: string
+          created_at?: string
+          created_by?: string | null
+          evidence_note?: string
+          featured?: boolean
+          id?: string
+          industry?: string
+          intervention?: string
+          outcome_report_id?: string
+          publication_consent?: boolean
+          published_at?: string | null
+          result?: string
+          slug?: string
+          status?: Database["public"]["Enums"]["proof_content_status"]
+          summary?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_studies_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_studies_outcome_report_id_fkey"
+            columns: ["outcome_report_id"]
+            isOneToOne: true
+            referencedRelation: "outcome_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_sops: {
         Row: {
           approved_at: string | null
@@ -1139,6 +1217,329 @@ export type Database = {
           },
         ]
       }
+      outcome_metrics: {
+        Row: {
+          baseline_value: number
+          created_at: string
+          current_value: number
+          direction: Database["public"]["Enums"]["metric_direction"]
+          evidence_source: string
+          id: string
+          name: string
+          outcome_report_id: string
+          sort_order: number
+          target_value: number | null
+          unit: string
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          baseline_value: number
+          created_at?: string
+          current_value: number
+          direction?: Database["public"]["Enums"]["metric_direction"]
+          evidence_source?: string
+          id?: string
+          name: string
+          outcome_report_id: string
+          sort_order?: number
+          target_value?: number | null
+          unit: string
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          baseline_value?: number
+          created_at?: string
+          current_value?: number
+          direction?: Database["public"]["Enums"]["metric_direction"]
+          evidence_source?: string
+          id?: string
+          name?: string
+          outcome_report_id?: string
+          sort_order?: number
+          target_value?: number | null
+          unit?: string
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outcome_metrics_outcome_report_id_fkey"
+            columns: ["outcome_report_id"]
+            isOneToOne: false
+            referencedRelation: "outcome_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outcome_reports: {
+        Row: {
+          account_id: string | null
+          approved_at: string | null
+          approved_by: string | null
+          baseline_summary: string
+          client_approved: boolean
+          cohort_id: string | null
+          created_at: string
+          created_by: string | null
+          deployment_id: string | null
+          engagement_type: Database["public"]["Enums"]["proof_engagement_type"]
+          executive_summary: string
+          expansion_opportunity_id: string | null
+          id: string
+          opportunity_id: string | null
+          outcomes_summary: string
+          period_end: string
+          period_start: string
+          published_at: string | null
+          recommendations: string
+          report_number: string
+          status: Database["public"]["Enums"]["proof_content_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          baseline_summary?: string
+          client_approved?: boolean
+          cohort_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deployment_id?: string | null
+          engagement_type: Database["public"]["Enums"]["proof_engagement_type"]
+          executive_summary?: string
+          expansion_opportunity_id?: string | null
+          id?: string
+          opportunity_id?: string | null
+          outcomes_summary?: string
+          period_end: string
+          period_start: string
+          published_at?: string | null
+          recommendations?: string
+          report_number: string
+          status?: Database["public"]["Enums"]["proof_content_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          baseline_summary?: string
+          client_approved?: boolean
+          cohort_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deployment_id?: string | null
+          engagement_type?: Database["public"]["Enums"]["proof_engagement_type"]
+          executive_summary?: string
+          expansion_opportunity_id?: string | null
+          id?: string
+          opportunity_id?: string | null
+          outcomes_summary?: string
+          period_end?: string
+          period_start?: string
+          published_at?: string | null
+          recommendations?: string
+          report_number?: string
+          status?: Database["public"]["Enums"]["proof_content_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outcome_reports_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outcome_reports_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outcome_reports_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outcome_reports_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outcome_reports_deployment_id_fkey"
+            columns: ["deployment_id"]
+            isOneToOne: false
+            referencedRelation: "workforce_deployments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outcome_reports_expansion_opportunity_id_fkey"
+            columns: ["expansion_opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outcome_reports_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_referrals: {
+        Row: {
+          account_id: string | null
+          company_name: string
+          contact_name: string
+          converted_at: string | null
+          created_at: string
+          created_by: string | null
+          estimated_value_aed: number
+          id: string
+          notes: string
+          opportunity_id: string | null
+          partnership_id: string
+          referred_at: string
+          status: Database["public"]["Enums"]["partner_referral_status"]
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          company_name: string
+          contact_name?: string
+          converted_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimated_value_aed?: number
+          id?: string
+          notes?: string
+          opportunity_id?: string | null
+          partnership_id: string
+          referred_at?: string
+          status?: Database["public"]["Enums"]["partner_referral_status"]
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          company_name?: string
+          contact_name?: string
+          converted_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimated_value_aed?: number
+          id?: string
+          notes?: string
+          opportunity_id?: string | null
+          partnership_id?: string
+          referred_at?: string
+          status?: Database["public"]["Enums"]["partner_referral_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_referrals_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_referrals_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_referrals_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_referrals_partnership_id_fkey"
+            columns: ["partnership_id"]
+            isOneToOne: false
+            referencedRelation: "partnerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partnerships: {
+        Row: {
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          created_at: string
+          id: string
+          next_step: string
+          next_step_due_at: string | null
+          organization_name: string
+          owner_id: string | null
+          status: Database["public"]["Enums"]["partnership_status"]
+          type: Database["public"]["Enums"]["partnership_type"]
+          updated_at: string
+          value_proposition: string
+          website: string
+        }
+        Insert: {
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string
+          id?: string
+          next_step?: string
+          next_step_due_at?: string | null
+          organization_name: string
+          owner_id?: string | null
+          status?: Database["public"]["Enums"]["partnership_status"]
+          type: Database["public"]["Enums"]["partnership_type"]
+          updated_at?: string
+          value_proposition?: string
+          website?: string
+        }
+        Update: {
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string
+          id?: string
+          next_step?: string
+          next_step_due_at?: string | null
+          organization_name?: string
+          owner_id?: string | null
+          status?: Database["public"]["Enums"]["partnership_status"]
+          type?: Database["public"]["Enums"]["partnership_type"]
+          updated_at?: string
+          value_proposition?: string
+          website?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partnerships_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           application_id: string | null
@@ -1253,6 +1654,216 @@ export type Database = {
             columns: ["opportunity_id"]
             isOneToOne: true
             referencedRelation: "corporate_opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      repeatability_benchmarks: {
+        Row: {
+          created_at: string
+          engagement_type: Database["public"]["Enums"]["proof_engagement_type"]
+          evidence_threshold: number
+          id: string
+          improvement_percent: number
+          industry: string
+          median_baseline: number
+          median_result: number
+          metric_name: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          sample_size: number
+          specialisation_id: string | null
+          status: Database["public"]["Enums"]["benchmark_status"]
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          engagement_type: Database["public"]["Enums"]["proof_engagement_type"]
+          evidence_threshold?: number
+          id?: string
+          improvement_percent: number
+          industry?: string
+          median_baseline: number
+          median_result: number
+          metric_name: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sample_size?: number
+          specialisation_id?: string | null
+          status?: Database["public"]["Enums"]["benchmark_status"]
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          engagement_type?: Database["public"]["Enums"]["proof_engagement_type"]
+          evidence_threshold?: number
+          id?: string
+          improvement_percent?: number
+          industry?: string
+          median_baseline?: number
+          median_result?: number
+          metric_name?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sample_size?: number
+          specialisation_id?: string | null
+          status?: Database["public"]["Enums"]["benchmark_status"]
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repeatability_benchmarks_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "repeatability_benchmarks_specialisation_id_fkey"
+            columns: ["specialisation_id"]
+            isOneToOne: false
+            referencedRelation: "role_specialisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      role_specialisations: {
+        Row: {
+          approved_tools: string[]
+          created_at: string
+          id: string
+          name: string
+          operator_type: Database["public"]["Enums"]["workforce_operator_type"]
+          owner_id: string | null
+          promise: string
+          readiness_requirements: string
+          responsibilities: string[]
+          slug: string
+          status: Database["public"]["Enums"]["role_specialisation_status"]
+          success_metrics: string[]
+          target_department: string
+          target_hours_saved_month: number
+          updated_at: string
+        }
+        Insert: {
+          approved_tools?: string[]
+          created_at?: string
+          id?: string
+          name: string
+          operator_type: Database["public"]["Enums"]["workforce_operator_type"]
+          owner_id?: string | null
+          promise?: string
+          readiness_requirements?: string
+          responsibilities?: string[]
+          slug: string
+          status?: Database["public"]["Enums"]["role_specialisation_status"]
+          success_metrics?: string[]
+          target_department: string
+          target_hours_saved_month?: number
+          updated_at?: string
+        }
+        Update: {
+          approved_tools?: string[]
+          created_at?: string
+          id?: string
+          name?: string
+          operator_type?: Database["public"]["Enums"]["workforce_operator_type"]
+          owner_id?: string | null
+          promise?: string
+          readiness_requirements?: string
+          responsibilities?: string[]
+          slug?: string
+          status?: Database["public"]["Enums"]["role_specialisation_status"]
+          success_metrics?: string[]
+          target_department?: string
+          target_hours_saved_month?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_specialisations_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      testimonials: {
+        Row: {
+          account_id: string | null
+          attribution_company: string
+          attribution_name: string
+          attribution_title: string
+          case_study_id: string | null
+          collected_at: string
+          created_at: string
+          created_by: string | null
+          id: string
+          permission: Database["public"]["Enums"]["testimonial_permission"]
+          published_at: string | null
+          quote: string
+          source: string
+          status: Database["public"]["Enums"]["proof_content_status"]
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          attribution_company?: string
+          attribution_name: string
+          attribution_title?: string
+          case_study_id?: string | null
+          collected_at?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          permission?: Database["public"]["Enums"]["testimonial_permission"]
+          published_at?: string | null
+          quote: string
+          source?: string
+          status?: Database["public"]["Enums"]["proof_content_status"]
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          attribution_company?: string
+          attribution_name?: string
+          attribution_title?: string
+          case_study_id?: string | null
+          collected_at?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          permission?: Database["public"]["Enums"]["testimonial_permission"]
+          published_at?: string | null
+          quote?: string
+          source?: string
+          status?: Database["public"]["Enums"]["proof_content_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "testimonials_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "testimonials_case_study_id_fkey"
+            columns: ["case_study_id"]
+            isOneToOne: false
+            referencedRelation: "case_studies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "testimonials_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1659,6 +2270,13 @@ export type Database = {
         | "deployment"
         | "sop"
         | "quality_review"
+        | "outcome_report"
+        | "case_study"
+        | "testimonial"
+        | "specialisation"
+        | "partnership"
+        | "referral"
+        | "benchmark"
       ai_maturity_level: "emerging" | "developing" | "ready" | "leading"
       ai_risk_level: "green" | "amber" | "red"
       app_role:
@@ -1678,6 +2296,7 @@ export type Database = {
         | "declined"
       assessment_outcome: "pass" | "resubmit" | "fail"
       attendance_status: "present" | "late" | "excused" | "absent"
+      benchmark_status: "emerging" | "validated" | "reference"
       client_sop_status: "draft" | "review" | "approved" | "retired"
       cohort_module_status: "locked" | "open" | "completed"
       cohort_status: "draft" | "enrolling" | "active" | "completed"
@@ -1702,6 +2321,7 @@ export type Database = {
         | "completed"
         | "withdrawn"
       learning_module_status: "draft" | "published" | "archived"
+      metric_direction: "increase" | "decrease" | "maintain"
       onboarding_task_status: "pending" | "in_progress" | "complete" | "waived"
       opportunity_stage:
         | "lead"
@@ -1711,8 +2331,29 @@ export type Database = {
         | "proof"
         | "won"
         | "lost"
+      partner_referral_status: "referred" | "qualified" | "converted" | "lost"
+      partnership_status:
+        | "prospect"
+        | "conversation"
+        | "active"
+        | "paused"
+        | "closed"
+      partnership_type:
+        | "business_community"
+        | "training_provider"
+        | "professional_association"
+        | "recruiter"
+        | "technology_provider"
+        | "referral_partner"
+      proof_content_status: "draft" | "review" | "approved" | "published"
+      proof_engagement_type:
+        | "academy"
+        | "team_enablement"
+        | "workforce"
+        | "workflow_implementation"
       proposal_status: "draft" | "sent" | "accepted" | "declined" | "expired"
       quality_review_outcome: "on_track" | "coaching" | "at_risk"
+      role_specialisation_status: "draft" | "pilot" | "proven" | "retired"
       session_delivery_mode: "live_online" | "in_person" | "hybrid"
       session_status: "scheduled" | "live" | "completed" | "cancelled"
       submission_status:
@@ -1721,6 +2362,7 @@ export type Database = {
         | "under_review"
         | "revision_requested"
         | "accepted"
+      testimonial_permission: "pending" | "approved" | "declined"
       workforce_deployment_status:
         | "preparing"
         | "active"
@@ -1899,6 +2541,13 @@ export const Constants = {
         "deployment",
         "sop",
         "quality_review",
+        "outcome_report",
+        "case_study",
+        "testimonial",
+        "specialisation",
+        "partnership",
+        "referral",
+        "benchmark",
       ],
       ai_maturity_level: ["emerging", "developing", "ready", "leading"],
       ai_risk_level: ["green", "amber", "red"],
@@ -1921,6 +2570,7 @@ export const Constants = {
       ],
       assessment_outcome: ["pass", "resubmit", "fail"],
       attendance_status: ["present", "late", "excused", "absent"],
+      benchmark_status: ["emerging", "validated", "reference"],
       client_sop_status: ["draft", "review", "approved", "retired"],
       cohort_module_status: ["locked", "open", "completed"],
       cohort_status: ["draft", "enrolling", "active", "completed"],
@@ -1948,6 +2598,7 @@ export const Constants = {
         "withdrawn",
       ],
       learning_module_status: ["draft", "published", "archived"],
+      metric_direction: ["increase", "decrease", "maintain"],
       onboarding_task_status: ["pending", "in_progress", "complete", "waived"],
       opportunity_stage: [
         "lead",
@@ -1958,8 +2609,32 @@ export const Constants = {
         "won",
         "lost",
       ],
+      partner_referral_status: ["referred", "qualified", "converted", "lost"],
+      partnership_status: [
+        "prospect",
+        "conversation",
+        "active",
+        "paused",
+        "closed",
+      ],
+      partnership_type: [
+        "business_community",
+        "training_provider",
+        "professional_association",
+        "recruiter",
+        "technology_provider",
+        "referral_partner",
+      ],
+      proof_content_status: ["draft", "review", "approved", "published"],
+      proof_engagement_type: [
+        "academy",
+        "team_enablement",
+        "workforce",
+        "workflow_implementation",
+      ],
       proposal_status: ["draft", "sent", "accepted", "declined", "expired"],
       quality_review_outcome: ["on_track", "coaching", "at_risk"],
+      role_specialisation_status: ["draft", "pilot", "proven", "retired"],
       session_delivery_mode: ["live_online", "in_person", "hybrid"],
       session_status: ["scheduled", "live", "completed", "cancelled"],
       submission_status: [
@@ -1969,6 +2644,7 @@ export const Constants = {
         "revision_requested",
         "accepted",
       ],
+      testimonial_permission: ["pending", "approved", "declined"],
       workforce_deployment_status: [
         "preparing",
         "active",

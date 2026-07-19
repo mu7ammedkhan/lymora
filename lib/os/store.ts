@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { hash } from "bcryptjs";
 import { JSONFile } from "lowdb/node";
 import { Low } from "lowdb";
-import type { Application, ClientSop, Cohort, CorporateAccount, CorporateOpportunity, CorporateProposal, CorporateWorkshop, DatabaseSchema, Enrollment, OperatorOnboardingItem, OperatorQualityReview, ReadinessAssessment, User, WorkforceDeployment, WorkforceMatch, WorkforceOperator, WorkflowOpportunity } from "@/lib/os/types";
+import type { Application, CaseStudy, ClientSop, Cohort, CorporateAccount, CorporateOpportunity, CorporateProposal, CorporateWorkshop, DatabaseSchema, Enrollment, OperatorOnboardingItem, OperatorQualityReview, OutcomeMetric, OutcomeReport, PartnerReferral, Partnership, ReadinessAssessment, RepeatabilityBenchmark, RoleSpecialisation, Testimonial, User, WorkforceDeployment, WorkforceMatch, WorkforceOperator, WorkflowOpportunity } from "@/lib/os/types";
 import { assertSupabaseConfiguration, wantsSupabase } from "@/lib/supabase/config";
 import { readSupabaseDatabase, updateSupabaseDatabase } from "@/lib/os/supabase-store";
 
@@ -37,6 +37,14 @@ const emptyDatabase: DatabaseSchema = {
   workforceDeployments: [],
   clientSops: [],
   operatorQualityReviews: [],
+  outcomeReports: [],
+  outcomeMetrics: [],
+  caseStudies: [],
+  testimonials: [],
+  roleSpecialisations: [],
+  partnerships: [],
+  partnerReferrals: [],
+  repeatabilityBenchmarks: [],
   activities: [],
 };
 
@@ -392,6 +400,53 @@ const seedOperatorQualityReviews: OperatorQualityReview[] = [
   { id: "c6000000-0000-4000-8000-000000000001", deploymentId: seedWorkforceDeployments[0].id, operatorId: seedWorkforceOperators[0].id, reviewDate: "2026-07-18", periodStart: "2026-07-14", periodEnd: "2026-07-18", reviewerId: "user-admin", qualityScore: 91, reliabilityScore: 94, responsibleAiScore: 96, clientSatisfactionScore: 90, utilisationPercent: 72, hoursWorked: 29, hoursSaved: 11, riskIncidents: 0, clientFeedback: "The first operating brief was clear, traceable and materially faster to review.", strengths: "Strong verification, stakeholder communication and approval routing.", actions: "Clarify missing KPI inputs earlier and document the exception path.", outcome: "on_track", createdAt: "2026-07-18T14:00:00.000Z" },
 ];
 
+const seedOutcomeReports: OutcomeReport[] = [
+  {
+    id: "d1000000-0000-4000-8000-000000000001", reportNumber: "LYM-OUT-26001", accountId: seedCorporateAccounts[0].id,
+    opportunityId: seedCorporateOpportunities[0].id, deploymentId: seedWorkforceDeployments[0].id, cohortId: null, expansionOpportunityId: null,
+    title: "Operations workforce pilot - first outcome review", engagementType: "workforce", status: "review", periodStart: "2026-07-14", periodEnd: "2026-07-18",
+    executiveSummary: "The first review cycle established a controlled weekly operating brief with traceable sources and executive approval.",
+    baselineSummary: "The team spent approximately six hours each week assembling updates with inconsistent source references.",
+    outcomesSummary: "The first approved brief reduced preparation effort, improved traceability and recorded zero material data incidents.",
+    recommendations: "Complete three monthly review cycles, standardise KPI intake and evaluate a second workflow before expansion.",
+    clientApproved: false, approvedBy: null, approvedAt: null, publishedAt: null, createdBy: "user-admin",
+    createdAt: "2026-07-18T15:00:00.000Z", updatedAt: "2026-07-18T15:00:00.000Z",
+  },
+];
+
+const seedOutcomeMetrics: OutcomeMetric[] = [
+  { id: "d2000000-0000-4000-8000-000000000001", outcomeReportId: seedOutcomeReports[0].id, name: "Weekly preparation time", unit: "hours", baselineValue: 6, currentValue: 3.25, targetValue: 2.5, direction: "decrease", evidenceSource: "Approved time log and operating-review checklist", verified: true, sortOrder: 10, createdAt: "2026-07-18T15:00:00.000Z", updatedAt: "2026-07-18T15:00:00.000Z" },
+  { id: "d2000000-0000-4000-8000-000000000002", outcomeReportId: seedOutcomeReports[0].id, name: "Quality index", unit: "score", baselineValue: 80, currentValue: 92.75, targetValue: 90, direction: "increase", evidenceSource: "Lymora operator QA review", verified: true, sortOrder: 20, createdAt: "2026-07-18T15:00:00.000Z", updatedAt: "2026-07-18T15:00:00.000Z" },
+  { id: "d2000000-0000-4000-8000-000000000003", outcomeReportId: seedOutcomeReports[0].id, name: "Material risk incidents", unit: "incidents", baselineValue: 0, currentValue: 0, targetValue: 0, direction: "maintain", evidenceSource: "Risk and exception register", verified: true, sortOrder: 30, createdAt: "2026-07-18T15:00:00.000Z", updatedAt: "2026-07-18T15:00:00.000Z" },
+];
+
+const seedCaseStudies: CaseStudy[] = [
+  { id: "d3000000-0000-4000-8000-000000000001", outcomeReportId: seedOutcomeReports[0].id, slug: "controlled-operating-reviews", title: "Building a controlled weekly operating review", clientDisplayName: "Confidential UAE advisory firm", industry: "Professional Services", summary: "A first-cycle working draft based on verified pilot evidence.", challenge: "Leadership reporting required manual synthesis and source reconciliation each week.", intervention: "Lymora deployed an AI Operations Operator with an approved SOP, fixed source folders and executive review checkpoints.", result: "Preparation time reduced in the first cycle while quality remained above target and no material incidents were recorded.", evidenceNote: "Early pilot evidence. Publish only after three cycles and written client consent.", status: "draft", featured: false, publicationConsent: false, publishedAt: null, createdBy: "user-admin", createdAt: "2026-07-18T15:30:00.000Z", updatedAt: "2026-07-18T15:30:00.000Z" },
+];
+
+const seedTestimonials: Testimonial[] = [
+  { id: "d4000000-0000-4000-8000-000000000001", accountId: seedCorporateAccounts[0].id, caseStudyId: seedCaseStudies[0].id, quote: "The first operating brief was clear, traceable and materially faster to review.", attributionName: "Samira Noor", attributionTitle: "Chief Operating Officer", attributionCompany: "Confidential UAE advisory firm", permission: "pending", source: "Recorded client QA feedback", status: "draft", collectedAt: "2026-07-18", publishedAt: null, createdBy: "user-admin", createdAt: "2026-07-18T15:30:00.000Z", updatedAt: "2026-07-18T15:30:00.000Z" },
+];
+
+const seedRoleSpecialisations: RoleSpecialisation[] = [
+  { id: "d5000000-0000-4000-8000-000000000001", slug: "ai-operations-operator", name: "AI Operations Operator", operatorType: "operations", targetDepartment: "Operations", promise: "Turn recurring management work into controlled, measurable operating rhythms.", responsibilities: ["Prepare verified operating briefs", "Maintain workflow SOPs", "Track actions and exceptions"], approvedTools: ["Approved AI workspace", "Google Workspace", "Client CRM"], successMetrics: ["Hours saved", "Quality index", "On-time reporting", "Risk incidents"], readinessRequirements: "Documented source ownership, named human approver and stable recurring workflows.", targetHoursSavedMonth: 24, status: "pilot", ownerId: "user-admin", createdAt: "2026-07-18T16:00:00.000Z", updatedAt: "2026-07-18T16:00:00.000Z" },
+  { id: "d5000000-0000-4000-8000-000000000002", slug: "ai-sales-intelligence-operator", name: "AI Sales Intelligence Operator", operatorType: "sales", targetDepartment: "Sales", promise: "Create evidence-led account intelligence and disciplined CRM follow-through.", responsibilities: ["Research priority accounts", "Prepare source-backed sales briefs", "Maintain CRM research workflows"], approvedTools: ["Approved AI workspace", "CRM", "Verified research sources"], successMetrics: ["Research turnaround", "Brief acceptance", "Qualified pipeline influenced"], readinessRequirements: "Defined ideal customer profile, CRM ownership and approved research-source policy.", targetHoursSavedMonth: 30, status: "draft", ownerId: "user-admin", createdAt: "2026-07-18T16:00:00.000Z", updatedAt: "2026-07-18T16:00:00.000Z" },
+  { id: "d5000000-0000-4000-8000-000000000003", slug: "ai-executive-assistant", name: "AI Executive Assistant", operatorType: "executive_assistant", targetDepartment: "Executive Office", promise: "Give leadership a reliable briefing, coordination and decision-support layer.", responsibilities: ["Prepare executive briefs", "Structure meeting follow-through", "Maintain decision records"], approvedTools: ["Approved AI workspace", "Calendar", "Document workspace"], successMetrics: ["Preparation time", "Action closure", "Executive satisfaction"], readinessRequirements: "Clear confidentiality boundaries, escalation rules and executive approval ownership.", targetHoursSavedMonth: 20, status: "draft", ownerId: "user-admin", createdAt: "2026-07-18T16:00:00.000Z", updatedAt: "2026-07-18T16:00:00.000Z" },
+];
+
+const seedPartnerships: Partnership[] = [
+  { id: "d6000000-0000-4000-8000-000000000001", organizationName: "UAE Business Leadership Network", type: "business_community", status: "conversation", contactName: "Community Director", contactEmail: "partnerships@example.com", contactPhone: "", website: "https://example.com", valueProposition: "Executive AI readiness briefings and member workforce diagnostics.", nextStep: "Agree a private executive briefing date", nextStepDueAt: "2026-08-05", ownerId: "user-admin", createdAt: "2026-07-18T16:30:00.000Z", updatedAt: "2026-07-18T16:30:00.000Z" },
+  { id: "d6000000-0000-4000-8000-000000000002", organizationName: "Gulf Talent Partners", type: "recruiter", status: "prospect", contactName: "Partnership Lead", contactEmail: "talent@example.com", contactPhone: "", website: "https://example.com", valueProposition: "A qualified pathway from professional talent into assessed AI operator roles.", nextStep: "Share operator screening standard", nextStepDueAt: "2026-08-10", ownerId: "user-admin", createdAt: "2026-07-18T16:30:00.000Z", updatedAt: "2026-07-18T16:30:00.000Z" },
+];
+
+const seedPartnerReferrals: PartnerReferral[] = [
+  { id: "d7000000-0000-4000-8000-000000000001", partnershipId: seedPartnerships[0].id, accountId: seedCorporateAccounts[1].id, opportunityId: seedCorporateOpportunities[1].id, contactName: "Omar Rahal", companyName: "Meridian Clinics Group", status: "qualified", estimatedValueAed: 18000, notes: "Introduced after an executive community discussion.", referredAt: "2026-07-15", convertedAt: null, createdBy: "user-admin", createdAt: "2026-07-15T09:00:00.000Z", updatedAt: "2026-07-17T09:00:00.000Z" },
+];
+
+const seedRepeatabilityBenchmarks: RepeatabilityBenchmark[] = [
+  { id: "d8000000-0000-4000-8000-000000000001", specialisationId: seedRoleSpecialisations[0].id, engagementType: "workforce", industry: "Professional Services", metricName: "Weekly preparation time", unit: "hours", sampleSize: 1, medianBaseline: 6, medianResult: 3.25, improvementPercent: 45.8, evidenceThreshold: 3, status: "emerging", reviewedBy: "user-admin", reviewedAt: "2026-07-18T17:00:00.000Z", createdAt: "2026-07-18T17:00:00.000Z", updatedAt: "2026-07-18T17:00:00.000Z" },
+];
+
 async function seedUsers(): Promise<User[]> {
   const now = "2026-07-10T08:00:00.000Z";
   const developmentPassword = (value: string | undefined, fallback: string, variable: string) => {
@@ -436,6 +491,14 @@ async function initialiseDatabase() {
   if (database.data.workforceDeployments.length === 0) database.data.workforceDeployments = seedWorkforceDeployments;
   if (database.data.clientSops.length === 0) database.data.clientSops = seedClientSops;
   if (database.data.operatorQualityReviews.length === 0) database.data.operatorQualityReviews = seedOperatorQualityReviews;
+  if (database.data.outcomeReports.length === 0) database.data.outcomeReports = seedOutcomeReports;
+  if (database.data.outcomeMetrics.length === 0) database.data.outcomeMetrics = seedOutcomeMetrics;
+  if (database.data.caseStudies.length === 0) database.data.caseStudies = seedCaseStudies;
+  if (database.data.testimonials.length === 0) database.data.testimonials = seedTestimonials;
+  if (database.data.roleSpecialisations.length === 0) database.data.roleSpecialisations = seedRoleSpecialisations;
+  if (database.data.partnerships.length === 0) database.data.partnerships = seedPartnerships;
+  if (database.data.partnerReferrals.length === 0) database.data.partnerReferrals = seedPartnerReferrals;
+  if (database.data.repeatabilityBenchmarks.length === 0) database.data.repeatabilityBenchmarks = seedRepeatabilityBenchmarks;
   if (database.data.activities.length === 0) {
     database.data.activities = [
       { id: randomUUID(), actorId: "user-admin", action: "cohort.created", entityType: "cohort", entityId: "cohort-caio-01", detail: "Created CAIO Founding Cohort", createdAt: "2026-07-10T09:00:00.000Z" },
