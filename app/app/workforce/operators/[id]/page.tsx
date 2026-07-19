@@ -19,6 +19,7 @@ export default async function WorkforceOperatorPage({ params }: { params: Promis
   const matches = database.workforceMatches.filter((item) => item.operatorId === operator.id);
   const deployments = database.workforceDeployments.filter((item) => item.operatorId === operator.id);
   const accountById = new Map(database.corporateAccounts.map((item) => [item.id, item]));
+  const operatorProfiles = database.users.filter((profile) => profile.role === "operator" && (!database.workforceOperators.some((item) => item.profileId === profile.id) || profile.id === operator.profileId));
 
   return (
     <div className="os-page os-workforce-page os-operator-workspace">
@@ -35,6 +36,7 @@ export default async function WorkforceOperatorPage({ params }: { params: Promis
           <div className="os-panel-head"><div><span className="os-label">Deployment readiness</span><h2>Operator control</h2></div><CircleGauge size={19} /></div>
           <form action={updateWorkforceOperatorAction} className="os-form-grid">
             <input type="hidden" name="operatorId" value={operator.id} />
+            <label>Operator login<select name="profileId" defaultValue={operator.profileId ?? ""}><option value="">Not linked</option>{operatorProfiles.map((profile) => <option value={profile.id} key={profile.id}>{profile.name} - {profile.email}</option>)}</select></label>
             <label>Status<select name="status" defaultValue={operator.status}>{["applicant","screening","onboarding","available","matched","deployed","paused","inactive"].map((status) => <option value={status} key={status}>{statusLabel(status)}</option>)}</select></label>
             <label>Readiness score<input type="number" name="readinessScore" min="0" max="100" defaultValue={operator.readinessScore} required /></label>
             <label>Work mode<select name="workMode" defaultValue={operator.workMode}><option value="remote">Remote</option><option value="on_site">On site</option><option value="hybrid">Hybrid</option></select></label>

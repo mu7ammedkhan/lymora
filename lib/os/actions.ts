@@ -579,17 +579,19 @@ export async function createWorkforceOperatorAction(formData: FormData) {
 export async function updateWorkforceOperatorAction(formData: FormData) {
   const user = await requireRole([...workforceRoles]);
   const parsed = z.object({
-    operatorId: z.string().uuid(), status: z.enum(["applicant", "screening", "onboarding", "available", "matched", "deployed", "paused", "inactive"]),
+    operatorId: z.string().uuid(), profileId: z.string().uuid().optional(),
+    status: z.enum(["applicant", "screening", "onboarding", "available", "matched", "deployed", "paused", "inactive"]),
     readinessScore: z.coerce.number().int().min(0).max(100), monthlyCostAed: z.coerce.number().min(0).max(1_000_000),
     capacityHoursMonth: z.coerce.number().int().min(1).max(744), availableFrom: z.string().optional(),
     specialisation: z.string().min(3).max(300), workMode: z.enum(["remote", "on_site", "hybrid"]),
-  }).safeParse(Object.fromEntries(formData));
+  }).safeParse({ ...Object.fromEntries(formData), profileId: formData.get("profileId") || undefined });
   if (!parsed.success) return;
   await updateDatabase((database) => {
     const operator = database.workforceOperators.find((item) => item.id === parsed.data.operatorId);
     if (!operator) return;
+    if (parsed.data.profileId && database.workforceOperators.some((item) => item.id !== operator.id && item.profileId === parsed.data.profileId)) return;
     Object.assign(operator, {
-      status: parsed.data.status, readinessScore: parsed.data.readinessScore, monthlyCostAed: parsed.data.monthlyCostAed,
+      profileId: parsed.data.profileId ?? null, status: parsed.data.status, readinessScore: parsed.data.readinessScore, monthlyCostAed: parsed.data.monthlyCostAed,
       capacityHoursMonth: parsed.data.capacityHoursMonth, availableFrom: parsed.data.availableFrom || null,
       specialisation: parsed.data.specialisation, workMode: parsed.data.workMode, updatedAt: new Date().toISOString(),
     });
