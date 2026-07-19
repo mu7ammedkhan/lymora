@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { hash } from "bcryptjs";
 import { JSONFile } from "lowdb/node";
 import { Low } from "lowdb";
-import type { Application, Cohort, CorporateAccount, CorporateOpportunity, CorporateProposal, CorporateWorkshop, DatabaseSchema, Enrollment, ReadinessAssessment, User, WorkflowOpportunity } from "@/lib/os/types";
+import type { Application, ClientSop, Cohort, CorporateAccount, CorporateOpportunity, CorporateProposal, CorporateWorkshop, DatabaseSchema, Enrollment, OperatorOnboardingItem, OperatorQualityReview, ReadinessAssessment, User, WorkforceDeployment, WorkforceMatch, WorkforceOperator, WorkflowOpportunity } from "@/lib/os/types";
 import { assertSupabaseConfiguration, wantsSupabase } from "@/lib/supabase/config";
 import { readSupabaseDatabase, updateSupabaseDatabase } from "@/lib/os/supabase-store";
 
@@ -31,6 +31,12 @@ const emptyDatabase: DatabaseSchema = {
   workflowOpportunities: [],
   corporateProposals: [],
   corporateWorkshops: [],
+  workforceOperators: [],
+  operatorOnboardingItems: [],
+  workforceMatches: [],
+  workforceDeployments: [],
+  clientSops: [],
+  operatorQualityReviews: [],
   activities: [],
 };
 
@@ -349,6 +355,43 @@ const seedCorporateWorkshops: CorporateWorkshop[] = [
   { id: "b6000000-0000-4000-8000-000000000002", opportunityId: seedCorporateOpportunities[0].id, proposalId: seedCorporateProposals[0].id, title: "Operations workflow lab", workshopType: "workflow_lab", startsAt: "2026-08-12T05:00:00.000Z", endsAt: "2026-08-12T08:00:00.000Z", deliveryMode: "hybrid", location: "Dubai", joinUrl: "https://meet.example.com/lymora", status: "planned", facilitator: "Lymora Enablement", participantTarget: 15, outcomes: "Build and validate two HITL workflows.", notes: "Subject to proposal acceptance.", createdAt: "2026-07-18T09:00:00.000Z", updatedAt: "2026-07-18T09:00:00.000Z" },
 ];
 
+const seedWorkforceOperators: WorkforceOperator[] = [
+  { id: "c1000000-0000-4000-8000-000000000001", profileId: null, applicationId: "app-aisha", credentialId: null, operatorNumber: "LYM-OP-26001", fullName: "Aisha Rahman", email: "aisha.operator@example.com", phone: "+971 50 555 0142", location: "Dubai, UAE", operatorType: "operations", status: "deployed", workMode: "hybrid", specialisation: "Operational reporting and workflow governance", skills: ["Process mapping", "Executive reporting", "SOP design", "Human-in-the-loop review"], experienceSummary: "Operations leader experienced in turning recurring management work into controlled, measurable systems.", readinessScore: 88, monthlyCostAed: 5000, capacityHoursMonth: 160, availableFrom: "2026-07-14", backgroundCheckComplete: true, ndaSignedAt: "2026-07-10T09:00:00.000Z", dataPolicySignedAt: "2026-07-10T09:15:00.000Z", ownerId: "user-admin", createdAt: "2026-07-07T09:00:00.000Z", updatedAt: "2026-07-14T09:00:00.000Z" },
+  { id: "c1000000-0000-4000-8000-000000000002", profileId: null, applicationId: "app-maya", credentialId: null, operatorNumber: "LYM-OP-26002", fullName: "Maya Chen", email: "maya.operator@example.com", phone: "+971 55 555 0157", location: "Dubai, UAE", operatorType: "sales", status: "available", workMode: "remote", specialisation: "Evidence-led account research and sales intelligence", skills: ["Market research", "Source verification", "CRM workflows", "Sales briefs"], experienceSummary: "Research associate with strong verification discipline and client-ready analytical writing.", readinessScore: 92, monthlyCostAed: 5500, capacityHoursMonth: 160, availableFrom: "2026-07-21", backgroundCheckComplete: true, ndaSignedAt: "2026-07-11T08:00:00.000Z", dataPolicySignedAt: "2026-07-11T08:15:00.000Z", ownerId: "user-admin", createdAt: "2026-07-09T09:00:00.000Z", updatedAt: "2026-07-19T10:00:00.000Z" },
+];
+
+const onboardingTasks = [
+  ["identity", "Identity and right-to-work verification", "Compliance"],
+  ["background", "Background and reference screening", "Compliance"],
+  ["credential", "Capability evidence and credential review", "Capability"],
+  ["nda", "Confidentiality agreement", "Compliance"],
+  ["data_policy", "Client data and responsible-AI policy", "Governance"],
+  ["tools", "Approved tool access and security setup", "Systems"],
+  ["role_playbook", "Client role playbook and workflow rehearsal", "Delivery"],
+] as const;
+
+const seedOperatorOnboardingItems: OperatorOnboardingItem[] = seedWorkforceOperators.flatMap((operator) => onboardingTasks.map(([taskKey, label, category], index) => ({
+  id: `onboarding-${operator.operatorNumber}-${index + 1}`, operatorId: operator.id, taskKey, label, category, status: "complete" as const,
+  dueDate: "2026-07-18", completedAt: "2026-07-18T09:00:00.000Z", completedBy: "user-admin", notes: "", sortOrder: (index + 1) * 10,
+  createdAt: "2026-07-10T09:00:00.000Z", updatedAt: "2026-07-18T09:00:00.000Z",
+})));
+
+const seedWorkforceMatches: WorkforceMatch[] = [
+  { id: "c3000000-0000-4000-8000-000000000001", operatorId: seedWorkforceOperators[0].id, accountId: seedCorporateAccounts[0].id, opportunityId: seedCorporateOpportunities[0].id, roleTitle: "AI Operations Operator", status: "approved", matchScore: 94, proposedRateAed: 9000, rationale: "Strong process ownership, reporting discipline and governance fit.", clientRequirements: "Build weekly operating reviews, maintain SOPs and keep human approval on client-facing outputs.", submittedAt: "2026-07-09T09:00:00.000Z", decidedAt: "2026-07-11T12:00:00.000Z", createdBy: "user-admin", createdAt: "2026-07-09T09:00:00.000Z", updatedAt: "2026-07-11T12:00:00.000Z" },
+];
+
+const seedWorkforceDeployments: WorkforceDeployment[] = [
+  { id: "c4000000-0000-4000-8000-000000000001", deploymentNumber: "LYM-DEP-26001", matchId: seedWorkforceMatches[0].id, operatorId: seedWorkforceOperators[0].id, accountId: seedCorporateAccounts[0].id, opportunityId: seedCorporateOpportunities[0].id, plan: "starter", roleTitle: "AI Operations Operator", status: "active", startsOn: "2026-07-14", endsOn: null, minimumTermMonths: 3, clientRateMonthlyAed: 9000, operatorCostMonthlyAed: 5000, managementAllocationAed: 1000, toolsOverheadAed: 500, targetHoursMonth: 160, accountManagerId: "user-admin", clientOwnerName: "Samira Noor", clientOwnerEmail: "samira@example.com", outcomes: "Establish reliable operating-review and management-reporting workflows.", successMeasures: "Reduce reporting preparation time, reach 80% workflow adoption and maintain zero material data incidents.", nextReviewAt: "2026-08-01T09:00:00.000Z", endedAt: null, createdAt: "2026-07-11T12:00:00.000Z", updatedAt: "2026-07-14T09:00:00.000Z" },
+];
+
+const seedClientSops: ClientSop[] = [
+  { id: "c5000000-0000-4000-8000-000000000001", deploymentId: seedWorkforceDeployments[0].id, title: "Weekly operating review", department: "Operations", version: 1, status: "approved", riskLevel: "amber", purpose: "Prepare a verified weekly operating brief for leadership.", approvedTools: ["Approved AI workspace", "Google Drive", "Google Sheets"], inputs: "Approved KPI sheet, department updates and action register.", procedure: "Confirm the reporting period and approved sources. Verify quantitative claims. Mark assumptions. Route the brief to the COO for approval.", reviewCriteria: "Figures reconcile to sources, owners and due dates are explicit, and assumptions are labelled.", dataControls: "Use only the approved client workspace and never enter sensitive data into unapproved tools.", humanApprover: "Chief Operating Officer", approvedBy: "user-admin", approvedAt: "2026-07-13T12:00:00.000Z", createdAt: "2026-07-12T09:00:00.000Z", updatedAt: "2026-07-13T12:00:00.000Z" },
+];
+
+const seedOperatorQualityReviews: OperatorQualityReview[] = [
+  { id: "c6000000-0000-4000-8000-000000000001", deploymentId: seedWorkforceDeployments[0].id, operatorId: seedWorkforceOperators[0].id, reviewDate: "2026-07-18", periodStart: "2026-07-14", periodEnd: "2026-07-18", reviewerId: "user-admin", qualityScore: 91, reliabilityScore: 94, responsibleAiScore: 96, clientSatisfactionScore: 90, utilisationPercent: 72, hoursWorked: 29, hoursSaved: 11, riskIncidents: 0, clientFeedback: "The first operating brief was clear, traceable and materially faster to review.", strengths: "Strong verification, stakeholder communication and approval routing.", actions: "Clarify missing KPI inputs earlier and document the exception path.", outcome: "on_track", createdAt: "2026-07-18T14:00:00.000Z" },
+];
+
 async function seedUsers(): Promise<User[]> {
   const now = "2026-07-10T08:00:00.000Z";
   const developmentPassword = (value: string | undefined, fallback: string, variable: string) => {
@@ -387,6 +430,12 @@ async function initialiseDatabase() {
   if (database.data.workflowOpportunities.length === 0) database.data.workflowOpportunities = seedWorkflowOpportunities;
   if (database.data.corporateProposals.length === 0) database.data.corporateProposals = seedCorporateProposals;
   if (database.data.corporateWorkshops.length === 0) database.data.corporateWorkshops = seedCorporateWorkshops;
+  if (database.data.workforceOperators.length === 0) database.data.workforceOperators = seedWorkforceOperators;
+  if (database.data.operatorOnboardingItems.length === 0) database.data.operatorOnboardingItems = seedOperatorOnboardingItems;
+  if (database.data.workforceMatches.length === 0) database.data.workforceMatches = seedWorkforceMatches;
+  if (database.data.workforceDeployments.length === 0) database.data.workforceDeployments = seedWorkforceDeployments;
+  if (database.data.clientSops.length === 0) database.data.clientSops = seedClientSops;
+  if (database.data.operatorQualityReviews.length === 0) database.data.operatorQualityReviews = seedOperatorQualityReviews;
   if (database.data.activities.length === 0) {
     database.data.activities = [
       { id: randomUUID(), actorId: "user-admin", action: "cohort.created", entityType: "cohort", entityId: "cohort-caio-01", detail: "Created CAIO Founding Cohort", createdAt: "2026-07-10T09:00:00.000Z" },

@@ -15,12 +15,18 @@ import type {
   CorporateProposal,
   CorporateWorkshop,
   Credential,
+  ClientSop,
   DatabaseSchema,
   Enrollment,
   LearningModule,
+  OperatorOnboardingItem,
+  OperatorQualityReview,
   ReadinessAssessment,
   Role,
   User,
+  WorkforceDeployment,
+  WorkforceMatch,
+  WorkforceOperator,
   WorkflowOpportunity,
 } from "@/lib/os/types";
 import type { Database } from "@/lib/supabase/database.types";
@@ -199,6 +205,78 @@ function rowToCorporateWorkshop(row: Row): CorporateWorkshop {
   };
 }
 
+function rowToWorkforceOperator(row: Row): WorkforceOperator {
+  return {
+    id: String(row.id), profileId: row.profile_id ? String(row.profile_id) : null, applicationId: row.application_id ? String(row.application_id) : null,
+    credentialId: row.credential_id ? String(row.credential_id) : null, operatorNumber: String(row.operator_number), fullName: String(row.full_name),
+    email: String(row.email), phone: String(row.phone), location: String(row.location), operatorType: row.operator_type as WorkforceOperator["operatorType"],
+    status: row.status as WorkforceOperator["status"], workMode: row.work_mode as WorkforceOperator["workMode"], specialisation: String(row.specialisation),
+    skills: Array.isArray(row.skills) ? row.skills.map(String) : [], experienceSummary: String(row.experience_summary), readinessScore: Number(row.readiness_score),
+    monthlyCostAed: Number(row.monthly_cost_aed), capacityHoursMonth: Number(row.capacity_hours_month),
+    availableFrom: row.available_from ? String(row.available_from) : null, backgroundCheckComplete: Boolean(row.background_check_complete),
+    ndaSignedAt: row.nda_signed_at ? String(row.nda_signed_at) : null, dataPolicySignedAt: row.data_policy_signed_at ? String(row.data_policy_signed_at) : null,
+    ownerId: row.owner_id ? String(row.owner_id) : null, createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToOperatorOnboardingItem(row: Row): OperatorOnboardingItem {
+  return {
+    id: String(row.id), operatorId: String(row.operator_id), taskKey: String(row.task_key), label: String(row.label), category: String(row.category),
+    status: row.status as OperatorOnboardingItem["status"], dueDate: row.due_date ? String(row.due_date) : null,
+    completedAt: row.completed_at ? String(row.completed_at) : null, completedBy: row.completed_by ? String(row.completed_by) : null,
+    notes: String(row.notes), sortOrder: Number(row.sort_order), createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToWorkforceMatch(row: Row): WorkforceMatch {
+  return {
+    id: String(row.id), operatorId: String(row.operator_id), accountId: String(row.account_id),
+    opportunityId: row.opportunity_id ? String(row.opportunity_id) : null, roleTitle: String(row.role_title), status: row.status as WorkforceMatch["status"],
+    matchScore: Number(row.match_score), proposedRateAed: Number(row.proposed_rate_aed), rationale: String(row.rationale),
+    clientRequirements: String(row.client_requirements), submittedAt: row.submitted_at ? String(row.submitted_at) : null,
+    decidedAt: row.decided_at ? String(row.decided_at) : null, createdBy: row.created_by ? String(row.created_by) : null,
+    createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToWorkforceDeployment(row: Row): WorkforceDeployment {
+  return {
+    id: String(row.id), deploymentNumber: String(row.deployment_number), matchId: row.match_id ? String(row.match_id) : null,
+    operatorId: String(row.operator_id), accountId: String(row.account_id), opportunityId: row.opportunity_id ? String(row.opportunity_id) : null,
+    plan: row.plan as WorkforceDeployment["plan"], roleTitle: String(row.role_title), status: row.status as WorkforceDeployment["status"],
+    startsOn: String(row.starts_on), endsOn: row.ends_on ? String(row.ends_on) : null, minimumTermMonths: Number(row.minimum_term_months),
+    clientRateMonthlyAed: Number(row.client_rate_monthly_aed), operatorCostMonthlyAed: Number(row.operator_cost_monthly_aed),
+    managementAllocationAed: Number(row.management_allocation_aed), toolsOverheadAed: Number(row.tools_overhead_aed),
+    targetHoursMonth: Number(row.target_hours_month), accountManagerId: row.account_manager_id ? String(row.account_manager_id) : null,
+    clientOwnerName: String(row.client_owner_name), clientOwnerEmail: String(row.client_owner_email), outcomes: String(row.outcomes),
+    successMeasures: String(row.success_measures), nextReviewAt: row.next_review_at ? String(row.next_review_at) : null,
+    endedAt: row.ended_at ? String(row.ended_at) : null, createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToClientSop(row: Row): ClientSop {
+  return {
+    id: String(row.id), deploymentId: String(row.deployment_id), title: String(row.title), department: String(row.department),
+    version: Number(row.version), status: row.status as ClientSop["status"], riskLevel: row.risk_level as ClientSop["riskLevel"],
+    purpose: String(row.purpose), approvedTools: Array.isArray(row.approved_tools) ? row.approved_tools.map(String) : [],
+    inputs: String(row.inputs), procedure: String(row.procedure), reviewCriteria: String(row.review_criteria), dataControls: String(row.data_controls),
+    humanApprover: String(row.human_approver), approvedBy: row.approved_by ? String(row.approved_by) : null,
+    approvedAt: row.approved_at ? String(row.approved_at) : null, createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToOperatorQualityReview(row: Row): OperatorQualityReview {
+  return {
+    id: String(row.id), deploymentId: String(row.deployment_id), operatorId: String(row.operator_id), reviewDate: String(row.review_date),
+    periodStart: String(row.period_start), periodEnd: String(row.period_end), reviewerId: row.reviewer_id ? String(row.reviewer_id) : null,
+    qualityScore: Number(row.quality_score), reliabilityScore: Number(row.reliability_score), responsibleAiScore: Number(row.responsible_ai_score),
+    clientSatisfactionScore: Number(row.client_satisfaction_score), utilisationPercent: Number(row.utilisation_percent),
+    hoursWorked: Number(row.hours_worked), hoursSaved: Number(row.hours_saved), riskIncidents: Number(row.risk_incidents),
+    clientFeedback: String(row.client_feedback), strengths: String(row.strengths), actions: String(row.actions),
+    outcome: row.outcome as OperatorQualityReview["outcome"], createdAt: String(row.created_at),
+  };
+}
+
 function applicationToRow(item: Application) {
   return {
     id: item.id, application_number: item.number, full_name: item.fullName, email: item.email, phone: item.phone, location: item.location,
@@ -281,6 +359,30 @@ function corporateWorkshopToRow(item: CorporateWorkshop) {
   return { id: item.id, opportunity_id: item.opportunityId, proposal_id: item.proposalId, title: item.title, workshop_type: item.workshopType, starts_at: item.startsAt, ends_at: item.endsAt, delivery_mode: item.deliveryMode, location: item.location, join_url: item.joinUrl, status: item.status, facilitator: item.facilitator, participant_target: item.participantTarget, outcomes: item.outcomes, notes: item.notes, created_at: item.createdAt, updated_at: item.updatedAt };
 }
 
+function workforceOperatorToRow(item: WorkforceOperator) {
+  return { id: item.id, profile_id: item.profileId, application_id: item.applicationId, credential_id: item.credentialId, operator_number: item.operatorNumber, full_name: item.fullName, email: item.email, phone: item.phone, location: item.location, operator_type: item.operatorType, status: item.status, work_mode: item.workMode, specialisation: item.specialisation, skills: item.skills, experience_summary: item.experienceSummary, readiness_score: item.readinessScore, monthly_cost_aed: item.monthlyCostAed, capacity_hours_month: item.capacityHoursMonth, available_from: item.availableFrom, background_check_complete: item.backgroundCheckComplete, nda_signed_at: item.ndaSignedAt, data_policy_signed_at: item.dataPolicySignedAt, owner_id: item.ownerId, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function operatorOnboardingItemToRow(item: OperatorOnboardingItem) {
+  return { id: item.id, operator_id: item.operatorId, task_key: item.taskKey, label: item.label, category: item.category, status: item.status, due_date: item.dueDate, completed_at: item.completedAt, completed_by: item.completedBy, notes: item.notes, sort_order: item.sortOrder, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function workforceMatchToRow(item: WorkforceMatch) {
+  return { id: item.id, operator_id: item.operatorId, account_id: item.accountId, opportunity_id: item.opportunityId, role_title: item.roleTitle, status: item.status, match_score: item.matchScore, proposed_rate_aed: item.proposedRateAed, rationale: item.rationale, client_requirements: item.clientRequirements, submitted_at: item.submittedAt, decided_at: item.decidedAt, created_by: item.createdBy, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function workforceDeploymentToRow(item: WorkforceDeployment) {
+  return { id: item.id, deployment_number: item.deploymentNumber, match_id: item.matchId, operator_id: item.operatorId, account_id: item.accountId, opportunity_id: item.opportunityId, plan: item.plan, role_title: item.roleTitle, status: item.status, starts_on: item.startsOn, ends_on: item.endsOn, minimum_term_months: item.minimumTermMonths, client_rate_monthly_aed: item.clientRateMonthlyAed, operator_cost_monthly_aed: item.operatorCostMonthlyAed, management_allocation_aed: item.managementAllocationAed, tools_overhead_aed: item.toolsOverheadAed, target_hours_month: item.targetHoursMonth, account_manager_id: item.accountManagerId, client_owner_name: item.clientOwnerName, client_owner_email: item.clientOwnerEmail, outcomes: item.outcomes, success_measures: item.successMeasures, next_review_at: item.nextReviewAt, ended_at: item.endedAt, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function clientSopToRow(item: ClientSop) {
+  return { id: item.id, deployment_id: item.deploymentId, title: item.title, department: item.department, version: item.version, status: item.status, risk_level: item.riskLevel, purpose: item.purpose, approved_tools: item.approvedTools, inputs: item.inputs, procedure: item.procedure, review_criteria: item.reviewCriteria, data_controls: item.dataControls, human_approver: item.humanApprover, approved_by: item.approvedBy, approved_at: item.approvedAt, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function operatorQualityReviewToRow(item: OperatorQualityReview) {
+  return { id: item.id, deployment_id: item.deploymentId, operator_id: item.operatorId, review_date: item.reviewDate, period_start: item.periodStart, period_end: item.periodEnd, reviewer_id: item.reviewerId, quality_score: item.qualityScore, reliability_score: item.reliabilityScore, responsible_ai_score: item.responsibleAiScore, client_satisfaction_score: item.clientSatisfactionScore, utilisation_percent: item.utilisationPercent, hours_worked: item.hoursWorked, hours_saved: item.hoursSaved, risk_incidents: item.riskIncidents, client_feedback: item.clientFeedback, strengths: item.strengths, actions: item.actions, outcome: item.outcome, created_at: item.createdAt };
+}
+
 function changedItems<T extends { id: string }>(before: T[], after: T[]) {
   const previous = new Map(before.map((item) => [item.id, JSON.stringify(item)]));
   return after.filter((item) => previous.get(item.id) !== JSON.stringify(item));
@@ -293,7 +395,7 @@ async function requireRows(table: string, result: { data: unknown[] | null; erro
 
 export async function readSupabaseDatabase(): Promise<DatabaseSchema> {
   const client = createSupabaseAdminClient();
-  const [profilesResult, applicationsResult, cohortsResult, enrollmentsResult, modulesResult, cohortModulesResult, sessionsResult, attendanceResult, componentsResult, submissionsResult, resultsResult, credentialsResult, accountsResult, opportunitiesResult, readinessResult, workflowsResult, proposalsResult, workshopsResult, activitiesResult] = await Promise.all([
+  const [profilesResult, applicationsResult, cohortsResult, enrollmentsResult, modulesResult, cohortModulesResult, sessionsResult, attendanceResult, componentsResult, submissionsResult, resultsResult, credentialsResult, accountsResult, opportunitiesResult, readinessResult, workflowsResult, proposalsResult, workshopsResult, operatorsResult, onboardingResult, matchesResult, deploymentsResult, sopsResult, qualityResult, activitiesResult] = await Promise.all([
     client.from("profiles").select("*").order("created_at", { ascending: true }),
     client.from("applications").select("*").order("created_at", { ascending: false }),
     client.from("cohorts").select("*").order("start_date", { ascending: true }),
@@ -312,6 +414,12 @@ export async function readSupabaseDatabase(): Promise<DatabaseSchema> {
     client.from("workflow_opportunities").select("*").order("priority", { ascending: true }),
     client.from("corporate_proposals").select("*").order("created_at", { ascending: false }),
     client.from("corporate_workshops").select("*").order("starts_at", { ascending: true }),
+    client.from("workforce_operators").select("*").order("created_at", { ascending: false }),
+    client.from("operator_onboarding_items").select("*").order("sort_order", { ascending: true }),
+    client.from("workforce_matches").select("*").order("created_at", { ascending: false }),
+    client.from("workforce_deployments").select("*").order("starts_on", { ascending: false }),
+    client.from("client_sops").select("*").order("updated_at", { ascending: false }),
+    client.from("operator_quality_reviews").select("*").order("review_date", { ascending: false }),
     client.from("activities").select("*").order("created_at", { ascending: false }).limit(500),
   ]);
   const profiles = await requireRows("profiles", profilesResult);
@@ -332,6 +440,12 @@ export async function readSupabaseDatabase(): Promise<DatabaseSchema> {
   const workflows = await requireRows("workflow_opportunities", workflowsResult);
   const proposals = await requireRows("corporate_proposals", proposalsResult);
   const workshops = await requireRows("corporate_workshops", workshopsResult);
+  const operators = await requireRows("workforce_operators", operatorsResult);
+  const onboarding = await requireRows("operator_onboarding_items", onboardingResult);
+  const matches = await requireRows("workforce_matches", matchesResult);
+  const deployments = await requireRows("workforce_deployments", deploymentsResult);
+  const sops = await requireRows("client_sops", sopsResult);
+  const quality = await requireRows("operator_quality_reviews", qualityResult);
   const activities = await requireRows("activities", activitiesResult);
   return {
     users: profiles.map(profileToUser), sessions: [], applications: applications.map(rowToApplication), cohorts: cohorts.map(rowToCohort),
@@ -341,6 +455,9 @@ export async function readSupabaseDatabase(): Promise<DatabaseSchema> {
     corporateAccounts: accounts.map(rowToCorporateAccount), corporateOpportunities: opportunities.map(rowToCorporateOpportunity),
     readinessAssessments: readiness.map(rowToReadinessAssessment), workflowOpportunities: workflows.map(rowToWorkflowOpportunity),
     corporateProposals: proposals.map(rowToCorporateProposal), corporateWorkshops: workshops.map(rowToCorporateWorkshop),
+    workforceOperators: operators.map(rowToWorkforceOperator), operatorOnboardingItems: onboarding.map(rowToOperatorOnboardingItem),
+    workforceMatches: matches.map(rowToWorkforceMatch), workforceDeployments: deployments.map(rowToWorkforceDeployment),
+    clientSops: sops.map(rowToClientSop), operatorQualityReviews: quality.map(rowToOperatorQualityReview),
     activities: activities.map(rowToActivity),
   };
 }
@@ -374,6 +491,12 @@ export async function updateSupabaseDatabase<T>(operation: (data: DatabaseSchema
   await upsertRows("workflow_opportunities", changedItems(before.workflowOpportunities, after.workflowOpportunities).map(workflowOpportunityToRow));
   await upsertRows("corporate_proposals", changedItems(before.corporateProposals, after.corporateProposals).map(corporateProposalToRow));
   await upsertRows("corporate_workshops", changedItems(before.corporateWorkshops, after.corporateWorkshops).map(corporateWorkshopToRow));
+  await upsertRows("workforce_operators", changedItems(before.workforceOperators, after.workforceOperators).map(workforceOperatorToRow));
+  await upsertRows("operator_onboarding_items", changedItems(before.operatorOnboardingItems, after.operatorOnboardingItems).map(operatorOnboardingItemToRow));
+  await upsertRows("workforce_matches", changedItems(before.workforceMatches, after.workforceMatches).map(workforceMatchToRow));
+  await upsertRows("workforce_deployments", changedItems(before.workforceDeployments, after.workforceDeployments).map(workforceDeploymentToRow));
+  await upsertRows("client_sops", changedItems(before.clientSops, after.clientSops).map(clientSopToRow));
+  await upsertRows("operator_quality_reviews", changedItems(before.operatorQualityReviews, after.operatorQualityReviews).map(operatorQualityReviewToRow));
   await upsertRows("activities", changedItems(before.activities, after.activities).map(activityToRow));
   return result;
 }

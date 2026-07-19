@@ -4,7 +4,7 @@ import { readDatabase } from "@/lib/os/store";
 import { formatDate, initials } from "@/lib/os/utils";
 
 export default async function ActivityPage() {
-  await requireRole(["super_admin", "academy_ops"]);
+  await requireRole(["super_admin", "academy_ops", "talent_ops"]);
   const database = await readDatabase();
   const users = new Map(database.users.map((user) => [user.id, user]));
   return (

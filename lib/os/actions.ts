@@ -12,10 +12,12 @@ import { createSupabaseTeamMember, setSupabaseUserStatus } from "@/lib/os/supaba
 import { wantsSupabase } from "@/lib/supabase/config";
 import { getAssessmentSummary } from "@/lib/os/academy";
 import { calculateProposal, calculateReadiness, corporatePackages, opportunityStages, standardProposalScope } from "@/lib/os/corporate";
+import { onboardingChecklist } from "@/lib/os/workforce";
 import type { CorporatePackage } from "@/lib/os/types";
 
 const staffRoles = ["super_admin", "academy_ops", "assessor"] as const;
 const corporateRoles = ["super_admin", "academy_ops"] as const;
+const workforceRoles = ["super_admin", "academy_ops", "talent_ops"] as const;
 
 export async function updateApplicationAction(formData: FormData) {
   const user = await requireRole([...staffRoles]);
@@ -132,7 +134,7 @@ export async function enrolApplicationAction(formData: FormData) {
 export async function createTeamMemberAction(formData: FormData) {
   const actor = await requireRole(["super_admin"]);
   const parsed = z.object({
-    name: z.string().min(2), email: z.string().email(), role: z.enum(["super_admin", "academy_ops", "assessor", "candidate"]),
+    name: z.string().min(2), email: z.string().email(), role: z.enum(["super_admin", "academy_ops", "talent_ops", "assessor", "candidate", "operator"]),
     password: z.string().min(10),
   }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return;
@@ -527,4 +529,293 @@ export async function updateCorporateWorkshopStatusAction(formData: FormData) {
   });
   revalidatePath("/app/corporate");
   revalidatePath(`/app/corporate/${parsed.data.opportunityId}/workshops`);
+}
+
+export async function createWorkforceOperatorAction(formData: FormData) {
+  const user = await requireRole([...workforceRoles]);
+  const parsed = z.object({
+    profileId: z.string().uuid().optional(), applicationId: z.string().uuid().optional(), credentialId: z.string().uuid().optional(),
+    fullName: z.string().min(2).max(160), email: z.string().email(), phone: z.string().max(40).optional(),
+    location: z.string().min(2).max(120), operatorType: z.enum(["executive_assistant", "marketing", "sales", "operations", "customer_experience", "recruitment"]),
+    status: z.enum(["applicant", "screening", "onboarding", "available"]), workMode: z.enum(["remote", "on_site", "hybrid"]),
+    specialisation: z.string().min(3).max(300), skills: z.string().min(2).max(1000), experienceSummary: z.string().min(10).max(4000),
+    readinessScore: z.coerce.number().int().min(0).max(100), monthlyCostAed: z.coerce.number().min(0).max(1_000_000),
+    capacityHoursMonth: z.coerce.number().int().min(1).max(744), availableFrom: z.string().optional(),
+  }).safeParse({
+    ...Object.fromEntries(formData),
+    profileId: formData.get("profileId") || undefined,
+    applicationId: formData.get("applicationId") || undefined,
+    credentialId: formData.get("credentialId") || undefined,
+  });
+  if (!parsed.success) return;
+  const operatorId = randomUUID();
+  const now = new Date().toISOString();
+  await updateDatabase((database) => {
+    if (parsed.data.profileId && database.workforceOperators.some((item) => item.profileId === parsed.data.profileId)) return;
+    const sequence = Math.max(26000, ...database.workforceOperators.map((item) => Number(item.operatorNumber.replace(/\D/g, "")) || 0)) + 1;
+    database.workforceOperators.push({
+      id: operatorId, profileId: parsed.data.profileId ?? null, applicationId: parsed.data.applicationId ?? null,
+      credentialId: parsed.data.credentialId ?? null, operatorNumber: `LYM-OP-${sequence}`, fullName: parsed.data.fullName,
+      email: parsed.data.email.toLowerCase(), phone: parsed.data.phone ?? "", location: parsed.data.location,
+      operatorType: parsed.data.operatorType, status: parsed.data.status, workMode: parsed.data.workMode,
+      specialisation: parsed.data.specialisation, skills: parsed.data.skills.split(",").map((skill) => skill.trim()).filter(Boolean),
+      experienceSummary: parsed.data.experienceSummary, readinessScore: parsed.data.readinessScore,
+      monthlyCostAed: parsed.data.monthlyCostAed, capacityHoursMonth: parsed.data.capacityHoursMonth,
+      availableFrom: parsed.data.availableFrom || null, backgroundCheckComplete: false, ndaSignedAt: null,
+      dataPolicySignedAt: null, ownerId: user.id, createdAt: now, updatedAt: now,
+    });
+    onboardingChecklist.forEach((task, index) => database.operatorOnboardingItems.push({
+      id: randomUUID(), operatorId, taskKey: task.key, label: task.label, category: task.category, status: "pending",
+      dueDate: parsed.data.availableFrom || null, completedAt: null, completedBy: null, notes: "", sortOrder: (index + 1) * 10,
+      createdAt: now, updatedAt: now,
+    }));
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "operator.created", entityType: "operator", entityId: operatorId, detail: `Added ${parsed.data.fullName} to the qualified operator bench`, createdAt: now });
+  });
+  revalidatePath("/app/workforce");
+  revalidatePath("/app/workforce/operators");
+  redirect(`/app/workforce/operators/${operatorId}`);
+}
+
+export async function updateWorkforceOperatorAction(formData: FormData) {
+  const user = await requireRole([...workforceRoles]);
+  const parsed = z.object({
+    operatorId: z.string().uuid(), status: z.enum(["applicant", "screening", "onboarding", "available", "matched", "deployed", "paused", "inactive"]),
+    readinessScore: z.coerce.number().int().min(0).max(100), monthlyCostAed: z.coerce.number().min(0).max(1_000_000),
+    capacityHoursMonth: z.coerce.number().int().min(1).max(744), availableFrom: z.string().optional(),
+    specialisation: z.string().min(3).max(300), workMode: z.enum(["remote", "on_site", "hybrid"]),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const operator = database.workforceOperators.find((item) => item.id === parsed.data.operatorId);
+    if (!operator) return;
+    Object.assign(operator, {
+      status: parsed.data.status, readinessScore: parsed.data.readinessScore, monthlyCostAed: parsed.data.monthlyCostAed,
+      capacityHoursMonth: parsed.data.capacityHoursMonth, availableFrom: parsed.data.availableFrom || null,
+      specialisation: parsed.data.specialisation, workMode: parsed.data.workMode, updatedAt: new Date().toISOString(),
+    });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "operator.updated", entityType: "operator", entityId: operator.id, detail: `Updated deployment readiness for ${operator.fullName}`, createdAt: new Date().toISOString() });
+  });
+  revalidatePath("/app/workforce");
+  revalidatePath("/app/workforce/operators");
+  revalidatePath(`/app/workforce/operators/${parsed.data.operatorId}`);
+}
+
+export async function updateOperatorOnboardingItemAction(formData: FormData) {
+  const user = await requireRole([...workforceRoles]);
+  const parsed = z.object({
+    operatorId: z.string().uuid(), itemId: z.string().uuid(), status: z.enum(["pending", "in_progress", "complete", "waived"]),
+    notes: z.string().max(2000).optional(),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const item = database.operatorOnboardingItems.find((entry) => entry.id === parsed.data.itemId && entry.operatorId === parsed.data.operatorId);
+    if (!item) return;
+    const now = new Date().toISOString();
+    item.status = parsed.data.status;
+    item.notes = parsed.data.notes ?? "";
+    item.completedAt = ["complete", "waived"].includes(item.status) ? now : null;
+    item.completedBy = ["complete", "waived"].includes(item.status) ? user.id : null;
+    item.updatedAt = now;
+    const tasks = database.operatorOnboardingItems.filter((entry) => entry.operatorId === item.operatorId);
+    const operator = database.workforceOperators.find((entry) => entry.id === item.operatorId);
+    if (operator && tasks.length > 0 && tasks.every((entry) => ["complete", "waived"].includes(entry.status)) && ["applicant", "screening", "onboarding"].includes(operator.status)) {
+      operator.status = "available";
+      operator.updatedAt = now;
+    }
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "operator.onboarding_updated", entityType: "operator", entityId: item.operatorId, detail: `${item.label}: ${item.status.replaceAll("_", " ")}`, createdAt: now });
+  });
+  revalidatePath("/app/workforce");
+  revalidatePath(`/app/workforce/operators/${parsed.data.operatorId}`);
+}
+
+export async function createWorkforceMatchAction(formData: FormData) {
+  const user = await requireRole([...workforceRoles]);
+  const parsed = z.object({
+    operatorId: z.string().uuid(), accountId: z.string().uuid(), opportunityId: z.string().uuid().optional(),
+    roleTitle: z.string().min(3).max(180), status: z.enum(["suggested", "shortlisted", "client_review", "approved"]),
+    matchScore: z.coerce.number().int().min(0).max(100), proposedRateAed: z.coerce.number().min(0).max(1_000_000),
+    rationale: z.string().min(10).max(4000), clientRequirements: z.string().min(10).max(4000),
+  }).safeParse({ ...Object.fromEntries(formData), opportunityId: formData.get("opportunityId") || undefined });
+  if (!parsed.success) return;
+  const matchId = randomUUID();
+  await updateDatabase((database) => {
+    const operator = database.workforceOperators.find((item) => item.id === parsed.data.operatorId);
+    const account = database.corporateAccounts.find((item) => item.id === parsed.data.accountId);
+    if (!operator || !account) return;
+    const now = new Date().toISOString();
+    database.workforceMatches.push({
+      id: matchId, operatorId: operator.id, accountId: account.id, opportunityId: parsed.data.opportunityId ?? null,
+      roleTitle: parsed.data.roleTitle, status: parsed.data.status, matchScore: parsed.data.matchScore,
+      proposedRateAed: parsed.data.proposedRateAed, rationale: parsed.data.rationale,
+      clientRequirements: parsed.data.clientRequirements, submittedAt: ["client_review", "approved"].includes(parsed.data.status) ? now : null,
+      decidedAt: parsed.data.status === "approved" ? now : null, createdBy: user.id, createdAt: now, updatedAt: now,
+    });
+    if (parsed.data.status === "approved") operator.status = "matched";
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "match.created", entityType: "match", entityId: matchId, detail: `Matched ${operator.fullName} to ${account.companyName} at ${parsed.data.matchScore}% fit`, createdAt: now });
+  });
+  revalidatePath("/app/workforce");
+  revalidatePath(`/app/workforce/operators/${parsed.data.operatorId}`);
+}
+
+export async function updateWorkforceMatchStatusAction(formData: FormData) {
+  const user = await requireRole([...workforceRoles]);
+  const parsed = z.object({ operatorId: z.string().uuid(), matchId: z.string().uuid(), status: z.enum(["suggested", "shortlisted", "client_review", "approved", "rejected", "withdrawn"]) }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const match = database.workforceMatches.find((item) => item.id === parsed.data.matchId && item.operatorId === parsed.data.operatorId);
+    if (!match) return;
+    const now = new Date().toISOString();
+    match.status = parsed.data.status;
+    match.submittedAt = ["client_review", "approved"].includes(match.status) && !match.submittedAt ? now : match.submittedAt;
+    match.decidedAt = ["approved", "rejected"].includes(match.status) ? now : null;
+    match.updatedAt = now;
+    const operator = database.workforceOperators.find((item) => item.id === match.operatorId);
+    if (operator && match.status === "approved") operator.status = "matched";
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "match.status_changed", entityType: "match", entityId: match.id, detail: `Changed match to ${match.status.replaceAll("_", " ")}`, createdAt: now });
+  });
+  revalidatePath("/app/workforce");
+  revalidatePath(`/app/workforce/operators/${parsed.data.operatorId}`);
+}
+
+export async function createWorkforceDeploymentAction(formData: FormData) {
+  const user = await requireRole([...workforceRoles]);
+  const parsed = z.object({
+    matchId: z.string().uuid().optional(), operatorId: z.string().uuid(), accountId: z.string().uuid(), opportunityId: z.string().uuid().optional(),
+    plan: z.enum(["starter", "growth", "scale", "custom"]), roleTitle: z.string().min(3).max(180),
+    status: z.enum(["preparing", "active"]), startsOn: z.string().min(10), endsOn: z.string().optional(),
+    minimumTermMonths: z.coerce.number().int().min(1).max(36), clientRateMonthlyAed: z.coerce.number().min(0).max(1_000_000),
+    operatorCostMonthlyAed: z.coerce.number().min(0).max(1_000_000), managementAllocationAed: z.coerce.number().min(0).max(1_000_000),
+    toolsOverheadAed: z.coerce.number().min(0).max(1_000_000), targetHoursMonth: z.coerce.number().int().min(1).max(744),
+    clientOwnerName: z.string().min(2).max(160), clientOwnerEmail: z.string().email(), outcomes: z.string().min(10).max(5000),
+    successMeasures: z.string().min(10).max(5000), nextReviewAt: z.string().optional(),
+  }).safeParse({
+    ...Object.fromEntries(formData), matchId: formData.get("matchId") || undefined,
+    opportunityId: formData.get("opportunityId") || undefined,
+  });
+  if (!parsed.success) return;
+  const deploymentId = randomUUID();
+  await updateDatabase((database) => {
+    const operator = database.workforceOperators.find((item) => item.id === parsed.data.operatorId);
+    const account = database.corporateAccounts.find((item) => item.id === parsed.data.accountId);
+    if (!operator || !account) return;
+    const now = new Date().toISOString();
+    const sequence = Math.max(26000, ...database.workforceDeployments.map((item) => Number(item.deploymentNumber.replace(/\D/g, "")) || 0)) + 1;
+    database.workforceDeployments.push({
+      id: deploymentId, deploymentNumber: `LYM-DEP-${sequence}`, matchId: parsed.data.matchId ?? null,
+      operatorId: operator.id, accountId: account.id, opportunityId: parsed.data.opportunityId ?? null, plan: parsed.data.plan,
+      roleTitle: parsed.data.roleTitle, status: parsed.data.status, startsOn: parsed.data.startsOn, endsOn: parsed.data.endsOn || null,
+      minimumTermMonths: parsed.data.minimumTermMonths, clientRateMonthlyAed: parsed.data.clientRateMonthlyAed,
+      operatorCostMonthlyAed: parsed.data.operatorCostMonthlyAed, managementAllocationAed: parsed.data.managementAllocationAed,
+      toolsOverheadAed: parsed.data.toolsOverheadAed, targetHoursMonth: parsed.data.targetHoursMonth,
+      accountManagerId: user.id, clientOwnerName: parsed.data.clientOwnerName, clientOwnerEmail: parsed.data.clientOwnerEmail.toLowerCase(),
+      outcomes: parsed.data.outcomes, successMeasures: parsed.data.successMeasures,
+      nextReviewAt: parsed.data.nextReviewAt ? new Date(parsed.data.nextReviewAt).toISOString() : null,
+      endedAt: null, createdAt: now, updatedAt: now,
+    });
+    operator.status = parsed.data.status === "active" ? "deployed" : "matched";
+    operator.updatedAt = now;
+    account.status = "client";
+    account.updatedAt = now;
+    const match = parsed.data.matchId ? database.workforceMatches.find((item) => item.id === parsed.data.matchId) : null;
+    if (match) { match.status = "approved"; match.decidedAt = now; match.updatedAt = now; }
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "deployment.created", entityType: "deployment", entityId: deploymentId, detail: `Started ${parsed.data.roleTitle} deployment for ${account.companyName}`, createdAt: now });
+  });
+  revalidatePath("/app/workforce");
+  redirect(`/app/workforce/deployments/${deploymentId}`);
+}
+
+export async function updateWorkforceDeploymentAction(formData: FormData) {
+  const user = await requireRole([...workforceRoles]);
+  const parsed = z.object({
+    deploymentId: z.string().uuid(), status: z.enum(["preparing", "active", "paused", "completed", "terminated"]),
+    nextReviewAt: z.string().optional(), outcomes: z.string().max(5000), successMeasures: z.string().max(5000),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const deployment = database.workforceDeployments.find((item) => item.id === parsed.data.deploymentId);
+    if (!deployment) return;
+    const now = new Date().toISOString();
+    deployment.status = parsed.data.status;
+    deployment.nextReviewAt = parsed.data.nextReviewAt ? new Date(parsed.data.nextReviewAt).toISOString() : null;
+    deployment.outcomes = parsed.data.outcomes;
+    deployment.successMeasures = parsed.data.successMeasures;
+    deployment.endedAt = ["completed", "terminated"].includes(deployment.status) ? now : null;
+    deployment.updatedAt = now;
+    const operator = database.workforceOperators.find((item) => item.id === deployment.operatorId);
+    if (operator) {
+      operator.status = deployment.status === "active" ? "deployed" : deployment.status === "preparing" ? "matched" : deployment.status === "paused" ? "paused" : "available";
+      operator.updatedAt = now;
+    }
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "deployment.updated", entityType: "deployment", entityId: deployment.id, detail: `Changed ${deployment.deploymentNumber} to ${deployment.status}`, createdAt: now });
+  });
+  revalidatePath("/app/workforce");
+  revalidatePath(`/app/workforce/deployments/${parsed.data.deploymentId}`);
+}
+
+export async function createClientSopAction(formData: FormData) {
+  const user = await requireRole([...workforceRoles]);
+  const parsed = z.object({
+    deploymentId: z.string().uuid(), title: z.string().min(3).max(180), department: z.string().min(2).max(120),
+    version: z.coerce.number().int().min(1).max(1000), status: z.enum(["draft", "review", "approved"]),
+    riskLevel: z.enum(["green", "amber", "red"]), purpose: z.string().min(10).max(4000), approvedTools: z.string().max(2000),
+    inputs: z.string().max(4000), procedure: z.string().min(20).max(12000), reviewCriteria: z.string().min(10).max(5000),
+    dataControls: z.string().min(10).max(5000), humanApprover: z.string().min(2).max(180),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  const sopId = randomUUID();
+  await updateDatabase((database) => {
+    if (!database.workforceDeployments.some((item) => item.id === parsed.data.deploymentId)) return;
+    const now = new Date().toISOString();
+    database.clientSops.push({
+      id: sopId, deploymentId: parsed.data.deploymentId, title: parsed.data.title, department: parsed.data.department,
+      version: parsed.data.version, status: parsed.data.status, riskLevel: parsed.data.riskLevel, purpose: parsed.data.purpose,
+      approvedTools: parsed.data.approvedTools.split(",").map((tool) => tool.trim()).filter(Boolean), inputs: parsed.data.inputs,
+      procedure: parsed.data.procedure, reviewCriteria: parsed.data.reviewCriteria, dataControls: parsed.data.dataControls,
+      humanApprover: parsed.data.humanApprover, approvedBy: parsed.data.status === "approved" ? user.id : null,
+      approvedAt: parsed.data.status === "approved" ? now : null, createdAt: now, updatedAt: now,
+    });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "sop.created", entityType: "sop", entityId: sopId, detail: `Created ${parsed.data.title} v${parsed.data.version}`, createdAt: now });
+  });
+  revalidatePath(`/app/workforce/deployments/${parsed.data.deploymentId}`);
+}
+
+export async function updateClientSopStatusAction(formData: FormData) {
+  const user = await requireRole([...workforceRoles]);
+  const parsed = z.object({ deploymentId: z.string().uuid(), sopId: z.string().uuid(), status: z.enum(["draft", "review", "approved", "retired"]) }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const sop = database.clientSops.find((item) => item.id === parsed.data.sopId && item.deploymentId === parsed.data.deploymentId);
+    if (!sop) return;
+    const now = new Date().toISOString();
+    sop.status = parsed.data.status;
+    sop.approvedBy = sop.status === "approved" ? user.id : null;
+    sop.approvedAt = sop.status === "approved" ? now : null;
+    sop.updatedAt = now;
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "sop.status_changed", entityType: "sop", entityId: sop.id, detail: `Changed ${sop.title} to ${sop.status}`, createdAt: now });
+  });
+  revalidatePath(`/app/workforce/deployments/${parsed.data.deploymentId}`);
+}
+
+export async function createOperatorQualityReviewAction(formData: FormData) {
+  const user = await requireRole([...workforceRoles]);
+  const score = z.coerce.number().int().min(0).max(100);
+  const parsed = z.object({
+    deploymentId: z.string().uuid(), operatorId: z.string().uuid(), reviewDate: z.string().min(10),
+    periodStart: z.string().min(10), periodEnd: z.string().min(10), qualityScore: score, reliabilityScore: score,
+    responsibleAiScore: score, clientSatisfactionScore: score, utilisationPercent: z.coerce.number().int().min(0).max(200),
+    hoursWorked: z.coerce.number().min(0).max(10000), hoursSaved: z.coerce.number().min(0).max(10000),
+    riskIncidents: z.coerce.number().int().min(0).max(1000), clientFeedback: z.string().max(5000),
+    strengths: z.string().max(5000), actions: z.string().max(5000), outcome: z.enum(["on_track", "coaching", "at_risk"]),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  const reviewId = randomUUID();
+  await updateDatabase((database) => {
+    const deployment = database.workforceDeployments.find((item) => item.id === parsed.data.deploymentId && item.operatorId === parsed.data.operatorId);
+    if (!deployment) return;
+    const now = new Date().toISOString();
+    database.operatorQualityReviews.unshift({ id: reviewId, ...parsed.data, reviewerId: user.id, createdAt: now });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "quality.reviewed", entityType: "quality_review", entityId: reviewId, detail: `Recorded ${parsed.data.outcome.replaceAll("_", " ")} QA review for ${deployment.deploymentNumber}`, createdAt: now });
+  });
+  revalidatePath("/app/workforce");
+  revalidatePath(`/app/workforce/deployments/${parsed.data.deploymentId}`);
 }

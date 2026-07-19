@@ -331,6 +331,84 @@ export type Database = {
           },
         ]
       }
+      client_sops: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          approved_tools: string[]
+          created_at: string
+          data_controls: string
+          department: string
+          deployment_id: string
+          human_approver: string
+          id: string
+          inputs: string
+          procedure: string
+          purpose: string
+          review_criteria: string
+          risk_level: Database["public"]["Enums"]["ai_risk_level"]
+          status: Database["public"]["Enums"]["client_sop_status"]
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_tools?: string[]
+          created_at?: string
+          data_controls: string
+          department: string
+          deployment_id: string
+          human_approver: string
+          id?: string
+          inputs?: string
+          procedure: string
+          purpose: string
+          review_criteria: string
+          risk_level?: Database["public"]["Enums"]["ai_risk_level"]
+          status?: Database["public"]["Enums"]["client_sop_status"]
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_tools?: string[]
+          created_at?: string
+          data_controls?: string
+          department?: string
+          deployment_id?: string
+          human_approver?: string
+          id?: string
+          inputs?: string
+          procedure?: string
+          purpose?: string
+          review_criteria?: string
+          risk_level?: Database["public"]["Enums"]["ai_risk_level"]
+          status?: Database["public"]["Enums"]["client_sop_status"]
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_sops_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_sops_deployment_id_fkey"
+            columns: ["deployment_id"]
+            isOneToOne: false
+            referencedRelation: "workforce_deployments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cohort_modules: {
         Row: {
           cohort_id: string
@@ -907,6 +985,160 @@ export type Database = {
         }
         Relationships: []
       }
+      operator_onboarding_items: {
+        Row: {
+          category: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          label: string
+          notes: string
+          operator_id: string
+          sort_order: number
+          status: Database["public"]["Enums"]["onboarding_task_status"]
+          task_key: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          label: string
+          notes?: string
+          operator_id: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["onboarding_task_status"]
+          task_key: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          label?: string
+          notes?: string
+          operator_id?: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["onboarding_task_status"]
+          task_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_onboarding_items_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_onboarding_items_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "workforce_operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operator_quality_reviews: {
+        Row: {
+          actions: string
+          client_feedback: string
+          client_satisfaction_score: number
+          created_at: string
+          deployment_id: string
+          hours_saved: number
+          hours_worked: number
+          id: string
+          operator_id: string
+          outcome: Database["public"]["Enums"]["quality_review_outcome"]
+          period_end: string
+          period_start: string
+          quality_score: number
+          reliability_score: number
+          responsible_ai_score: number
+          review_date: string
+          reviewer_id: string | null
+          risk_incidents: number
+          strengths: string
+          utilisation_percent: number
+        }
+        Insert: {
+          actions?: string
+          client_feedback?: string
+          client_satisfaction_score: number
+          created_at?: string
+          deployment_id: string
+          hours_saved?: number
+          hours_worked?: number
+          id?: string
+          operator_id: string
+          outcome?: Database["public"]["Enums"]["quality_review_outcome"]
+          period_end: string
+          period_start: string
+          quality_score: number
+          reliability_score: number
+          responsible_ai_score: number
+          review_date: string
+          reviewer_id?: string | null
+          risk_incidents?: number
+          strengths?: string
+          utilisation_percent: number
+        }
+        Update: {
+          actions?: string
+          client_feedback?: string
+          client_satisfaction_score?: number
+          created_at?: string
+          deployment_id?: string
+          hours_saved?: number
+          hours_worked?: number
+          id?: string
+          operator_id?: string
+          outcome?: Database["public"]["Enums"]["quality_review_outcome"]
+          period_end?: string
+          period_start?: string
+          quality_score?: number
+          reliability_score?: number
+          responsible_ai_score?: number
+          review_date?: string
+          reviewer_id?: string | null
+          risk_incidents?: number
+          strengths?: string
+          utilisation_percent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_quality_reviews_deployment_id_fkey"
+            columns: ["deployment_id"]
+            isOneToOne: false
+            referencedRelation: "workforce_deployments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_quality_reviews_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "workforce_operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_quality_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           application_id: string | null
@@ -1081,6 +1313,325 @@ export type Database = {
           },
         ]
       }
+      workforce_deployments: {
+        Row: {
+          account_id: string
+          account_manager_id: string | null
+          client_owner_email: string
+          client_owner_name: string
+          client_rate_monthly_aed: number
+          created_at: string
+          deployment_number: string
+          ended_at: string | null
+          ends_on: string | null
+          id: string
+          management_allocation_aed: number
+          match_id: string | null
+          minimum_term_months: number
+          next_review_at: string | null
+          operator_cost_monthly_aed: number
+          operator_id: string
+          opportunity_id: string | null
+          outcomes: string
+          plan: Database["public"]["Enums"]["workforce_plan"]
+          role_title: string
+          starts_on: string
+          status: Database["public"]["Enums"]["workforce_deployment_status"]
+          success_measures: string
+          target_hours_month: number
+          tools_overhead_aed: number
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          account_manager_id?: string | null
+          client_owner_email: string
+          client_owner_name: string
+          client_rate_monthly_aed: number
+          created_at?: string
+          deployment_number: string
+          ended_at?: string | null
+          ends_on?: string | null
+          id?: string
+          management_allocation_aed?: number
+          match_id?: string | null
+          minimum_term_months?: number
+          next_review_at?: string | null
+          operator_cost_monthly_aed: number
+          operator_id: string
+          opportunity_id?: string | null
+          outcomes?: string
+          plan?: Database["public"]["Enums"]["workforce_plan"]
+          role_title: string
+          starts_on: string
+          status?: Database["public"]["Enums"]["workforce_deployment_status"]
+          success_measures?: string
+          target_hours_month?: number
+          tools_overhead_aed?: number
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          account_manager_id?: string | null
+          client_owner_email?: string
+          client_owner_name?: string
+          client_rate_monthly_aed?: number
+          created_at?: string
+          deployment_number?: string
+          ended_at?: string | null
+          ends_on?: string | null
+          id?: string
+          management_allocation_aed?: number
+          match_id?: string | null
+          minimum_term_months?: number
+          next_review_at?: string | null
+          operator_cost_monthly_aed?: number
+          operator_id?: string
+          opportunity_id?: string | null
+          outcomes?: string
+          plan?: Database["public"]["Enums"]["workforce_plan"]
+          role_title?: string
+          starts_on?: string
+          status?: Database["public"]["Enums"]["workforce_deployment_status"]
+          success_measures?: string
+          target_hours_month?: number
+          tools_overhead_aed?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workforce_deployments_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_deployments_account_manager_id_fkey"
+            columns: ["account_manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_deployments_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "workforce_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_deployments_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "workforce_operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_deployments_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workforce_matches: {
+        Row: {
+          account_id: string
+          client_requirements: string
+          created_at: string
+          created_by: string | null
+          decided_at: string | null
+          id: string
+          match_score: number
+          operator_id: string
+          opportunity_id: string | null
+          proposed_rate_aed: number
+          rationale: string
+          role_title: string
+          status: Database["public"]["Enums"]["workforce_match_status"]
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          client_requirements?: string
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          id?: string
+          match_score?: number
+          operator_id: string
+          opportunity_id?: string | null
+          proposed_rate_aed?: number
+          rationale?: string
+          role_title: string
+          status?: Database["public"]["Enums"]["workforce_match_status"]
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          client_requirements?: string
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          id?: string
+          match_score?: number
+          operator_id?: string
+          opportunity_id?: string | null
+          proposed_rate_aed?: number
+          rationale?: string
+          role_title?: string
+          status?: Database["public"]["Enums"]["workforce_match_status"]
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workforce_matches_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_matches_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_matches_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "workforce_operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_matches_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workforce_operators: {
+        Row: {
+          application_id: string | null
+          available_from: string | null
+          background_check_complete: boolean
+          capacity_hours_month: number
+          created_at: string
+          credential_id: string | null
+          data_policy_signed_at: string | null
+          email: string
+          experience_summary: string
+          full_name: string
+          id: string
+          location: string
+          monthly_cost_aed: number
+          nda_signed_at: string | null
+          operator_number: string
+          operator_type: Database["public"]["Enums"]["workforce_operator_type"]
+          owner_id: string | null
+          phone: string
+          profile_id: string | null
+          readiness_score: number
+          skills: string[]
+          specialisation: string
+          status: Database["public"]["Enums"]["workforce_operator_status"]
+          updated_at: string
+          work_mode: Database["public"]["Enums"]["workforce_work_mode"]
+        }
+        Insert: {
+          application_id?: string | null
+          available_from?: string | null
+          background_check_complete?: boolean
+          capacity_hours_month?: number
+          created_at?: string
+          credential_id?: string | null
+          data_policy_signed_at?: string | null
+          email: string
+          experience_summary?: string
+          full_name: string
+          id?: string
+          location?: string
+          monthly_cost_aed?: number
+          nda_signed_at?: string | null
+          operator_number: string
+          operator_type: Database["public"]["Enums"]["workforce_operator_type"]
+          owner_id?: string | null
+          phone?: string
+          profile_id?: string | null
+          readiness_score?: number
+          skills?: string[]
+          specialisation?: string
+          status?: Database["public"]["Enums"]["workforce_operator_status"]
+          updated_at?: string
+          work_mode?: Database["public"]["Enums"]["workforce_work_mode"]
+        }
+        Update: {
+          application_id?: string | null
+          available_from?: string | null
+          background_check_complete?: boolean
+          capacity_hours_month?: number
+          created_at?: string
+          credential_id?: string | null
+          data_policy_signed_at?: string | null
+          email?: string
+          experience_summary?: string
+          full_name?: string
+          id?: string
+          location?: string
+          monthly_cost_aed?: number
+          nda_signed_at?: string | null
+          operator_number?: string
+          operator_type?: Database["public"]["Enums"]["workforce_operator_type"]
+          owner_id?: string | null
+          phone?: string
+          profile_id?: string | null
+          readiness_score?: number
+          skills?: string[]
+          specialisation?: string
+          status?: Database["public"]["Enums"]["workforce_operator_status"]
+          updated_at?: string
+          work_mode?: Database["public"]["Enums"]["workforce_work_mode"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workforce_operators_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_operators_credential_id_fkey"
+            columns: ["credential_id"]
+            isOneToOne: true
+            referencedRelation: "credentials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_operators_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_operators_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1103,9 +1654,20 @@ export type Database = {
         | "diagnostic"
         | "proposal"
         | "workshop"
+        | "operator"
+        | "match"
+        | "deployment"
+        | "sop"
+        | "quality_review"
       ai_maturity_level: "emerging" | "developing" | "ready" | "leading"
       ai_risk_level: "green" | "amber" | "red"
-      app_role: "super_admin" | "academy_ops" | "assessor" | "candidate"
+      app_role:
+        | "super_admin"
+        | "academy_ops"
+        | "assessor"
+        | "candidate"
+        | "talent_ops"
+        | "operator"
       application_source: "website" | "manual" | "referral"
       application_status:
         | "new"
@@ -1116,6 +1678,7 @@ export type Database = {
         | "declined"
       assessment_outcome: "pass" | "resubmit" | "fail"
       attendance_status: "present" | "late" | "excused" | "absent"
+      client_sop_status: "draft" | "review" | "approved" | "retired"
       cohort_module_status: "locked" | "open" | "completed"
       cohort_status: "draft" | "enrolling" | "active" | "completed"
       corporate_account_status: "prospect" | "active" | "client" | "inactive"
@@ -1139,6 +1702,7 @@ export type Database = {
         | "completed"
         | "withdrawn"
       learning_module_status: "draft" | "published" | "archived"
+      onboarding_task_status: "pending" | "in_progress" | "complete" | "waived"
       opportunity_stage:
         | "lead"
         | "qualified"
@@ -1148,6 +1712,7 @@ export type Database = {
         | "won"
         | "lost"
       proposal_status: "draft" | "sent" | "accepted" | "declined" | "expired"
+      quality_review_outcome: "on_track" | "coaching" | "at_risk"
       session_delivery_mode: "live_online" | "in_person" | "hybrid"
       session_status: "scheduled" | "live" | "completed" | "cancelled"
       submission_status:
@@ -1156,6 +1721,37 @@ export type Database = {
         | "under_review"
         | "revision_requested"
         | "accepted"
+      workforce_deployment_status:
+        | "preparing"
+        | "active"
+        | "paused"
+        | "completed"
+        | "terminated"
+      workforce_match_status:
+        | "suggested"
+        | "shortlisted"
+        | "client_review"
+        | "approved"
+        | "rejected"
+        | "withdrawn"
+      workforce_operator_status:
+        | "applicant"
+        | "screening"
+        | "onboarding"
+        | "available"
+        | "matched"
+        | "deployed"
+        | "paused"
+        | "inactive"
+      workforce_operator_type:
+        | "executive_assistant"
+        | "marketing"
+        | "sales"
+        | "operations"
+        | "customer_experience"
+        | "recruitment"
+      workforce_plan: "starter" | "growth" | "scale" | "custom"
+      workforce_work_mode: "remote" | "on_site" | "hybrid"
       workshop_status: "planned" | "confirmed" | "completed" | "cancelled"
     }
     CompositeTypes: {
@@ -1298,10 +1894,22 @@ export const Constants = {
         "diagnostic",
         "proposal",
         "workshop",
+        "operator",
+        "match",
+        "deployment",
+        "sop",
+        "quality_review",
       ],
       ai_maturity_level: ["emerging", "developing", "ready", "leading"],
       ai_risk_level: ["green", "amber", "red"],
-      app_role: ["super_admin", "academy_ops", "assessor", "candidate"],
+      app_role: [
+        "super_admin",
+        "academy_ops",
+        "assessor",
+        "candidate",
+        "talent_ops",
+        "operator",
+      ],
       application_source: ["website", "manual", "referral"],
       application_status: [
         "new",
@@ -1313,6 +1921,7 @@ export const Constants = {
       ],
       assessment_outcome: ["pass", "resubmit", "fail"],
       attendance_status: ["present", "late", "excused", "absent"],
+      client_sop_status: ["draft", "review", "approved", "retired"],
       cohort_module_status: ["locked", "open", "completed"],
       cohort_status: ["draft", "enrolling", "active", "completed"],
       corporate_account_status: ["prospect", "active", "client", "inactive"],
@@ -1339,6 +1948,7 @@ export const Constants = {
         "withdrawn",
       ],
       learning_module_status: ["draft", "published", "archived"],
+      onboarding_task_status: ["pending", "in_progress", "complete", "waived"],
       opportunity_stage: [
         "lead",
         "qualified",
@@ -1349,6 +1959,7 @@ export const Constants = {
         "lost",
       ],
       proposal_status: ["draft", "sent", "accepted", "declined", "expired"],
+      quality_review_outcome: ["on_track", "coaching", "at_risk"],
       session_delivery_mode: ["live_online", "in_person", "hybrid"],
       session_status: ["scheduled", "live", "completed", "cancelled"],
       submission_status: [
@@ -1358,6 +1969,41 @@ export const Constants = {
         "revision_requested",
         "accepted",
       ],
+      workforce_deployment_status: [
+        "preparing",
+        "active",
+        "paused",
+        "completed",
+        "terminated",
+      ],
+      workforce_match_status: [
+        "suggested",
+        "shortlisted",
+        "client_review",
+        "approved",
+        "rejected",
+        "withdrawn",
+      ],
+      workforce_operator_status: [
+        "applicant",
+        "screening",
+        "onboarding",
+        "available",
+        "matched",
+        "deployed",
+        "paused",
+        "inactive",
+      ],
+      workforce_operator_type: [
+        "executive_assistant",
+        "marketing",
+        "sales",
+        "operations",
+        "customer_experience",
+        "recruitment",
+      ],
+      workforce_plan: ["starter", "growth", "scale", "custom"],
+      workforce_work_mode: ["remote", "on_site", "hybrid"],
       workshop_status: ["planned", "confirmed", "completed", "cancelled"],
     },
   },

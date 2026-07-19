@@ -1,4 +1,4 @@
-export const roles = ["super_admin", "academy_ops", "assessor", "candidate"] as const;
+export const roles = ["super_admin", "academy_ops", "talent_ops", "assessor", "candidate", "operator"] as const;
 export type Role = (typeof roles)[number];
 
 export type User = {
@@ -303,11 +303,156 @@ export type CorporateWorkshop = {
   updatedAt: string;
 };
 
+export type WorkforceOperatorType = "executive_assistant" | "marketing" | "sales" | "operations" | "customer_experience" | "recruitment";
+export type WorkforceOperatorStatus = "applicant" | "screening" | "onboarding" | "available" | "matched" | "deployed" | "paused" | "inactive";
+export type WorkforceWorkMode = "remote" | "on_site" | "hybrid";
+export type OnboardingTaskStatus = "pending" | "in_progress" | "complete" | "waived";
+export type WorkforceMatchStatus = "suggested" | "shortlisted" | "client_review" | "approved" | "rejected" | "withdrawn";
+export type WorkforcePlan = "starter" | "growth" | "scale" | "custom";
+export type WorkforceDeploymentStatus = "preparing" | "active" | "paused" | "completed" | "terminated";
+export type ClientSopStatus = "draft" | "review" | "approved" | "retired";
+export type QualityReviewOutcome = "on_track" | "coaching" | "at_risk";
+
+export type WorkforceOperator = {
+  id: string;
+  profileId: string | null;
+  applicationId: string | null;
+  credentialId: string | null;
+  operatorNumber: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  location: string;
+  operatorType: WorkforceOperatorType;
+  status: WorkforceOperatorStatus;
+  workMode: WorkforceWorkMode;
+  specialisation: string;
+  skills: string[];
+  experienceSummary: string;
+  readinessScore: number;
+  monthlyCostAed: number;
+  capacityHoursMonth: number;
+  availableFrom: string | null;
+  backgroundCheckComplete: boolean;
+  ndaSignedAt: string | null;
+  dataPolicySignedAt: string | null;
+  ownerId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OperatorOnboardingItem = {
+  id: string;
+  operatorId: string;
+  taskKey: string;
+  label: string;
+  category: string;
+  status: OnboardingTaskStatus;
+  dueDate: string | null;
+  completedAt: string | null;
+  completedBy: string | null;
+  notes: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WorkforceMatch = {
+  id: string;
+  operatorId: string;
+  accountId: string;
+  opportunityId: string | null;
+  roleTitle: string;
+  status: WorkforceMatchStatus;
+  matchScore: number;
+  proposedRateAed: number;
+  rationale: string;
+  clientRequirements: string;
+  submittedAt: string | null;
+  decidedAt: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WorkforceDeployment = {
+  id: string;
+  deploymentNumber: string;
+  matchId: string | null;
+  operatorId: string;
+  accountId: string;
+  opportunityId: string | null;
+  plan: WorkforcePlan;
+  roleTitle: string;
+  status: WorkforceDeploymentStatus;
+  startsOn: string;
+  endsOn: string | null;
+  minimumTermMonths: number;
+  clientRateMonthlyAed: number;
+  operatorCostMonthlyAed: number;
+  managementAllocationAed: number;
+  toolsOverheadAed: number;
+  targetHoursMonth: number;
+  accountManagerId: string | null;
+  clientOwnerName: string;
+  clientOwnerEmail: string;
+  outcomes: string;
+  successMeasures: string;
+  nextReviewAt: string | null;
+  endedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ClientSop = {
+  id: string;
+  deploymentId: string;
+  title: string;
+  department: string;
+  version: number;
+  status: ClientSopStatus;
+  riskLevel: AiRiskLevel;
+  purpose: string;
+  approvedTools: string[];
+  inputs: string;
+  procedure: string;
+  reviewCriteria: string;
+  dataControls: string;
+  humanApprover: string;
+  approvedBy: string | null;
+  approvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OperatorQualityReview = {
+  id: string;
+  deploymentId: string;
+  operatorId: string;
+  reviewDate: string;
+  periodStart: string;
+  periodEnd: string;
+  reviewerId: string | null;
+  qualityScore: number;
+  reliabilityScore: number;
+  responsibleAiScore: number;
+  clientSatisfactionScore: number;
+  utilisationPercent: number;
+  hoursWorked: number;
+  hoursSaved: number;
+  riskIncidents: number;
+  clientFeedback: string;
+  strengths: string;
+  actions: string;
+  outcome: QualityReviewOutcome;
+  createdAt: string;
+};
+
 export type Activity = {
   id: string;
   actorId: string | null;
   action: string;
-  entityType: "application" | "cohort" | "enrollment" | "session" | "user" | "assessment" | "credential" | "account" | "opportunity" | "diagnostic" | "proposal" | "workshop";
+  entityType: "application" | "cohort" | "enrollment" | "session" | "user" | "assessment" | "credential" | "account" | "opportunity" | "diagnostic" | "proposal" | "workshop" | "operator" | "match" | "deployment" | "sop" | "quality_review";
   entityId: string;
   detail: string;
   createdAt: string;
@@ -333,12 +478,20 @@ export type DatabaseSchema = {
   workflowOpportunities: WorkflowOpportunity[];
   corporateProposals: CorporateProposal[];
   corporateWorkshops: CorporateWorkshop[];
+  workforceOperators: WorkforceOperator[];
+  operatorOnboardingItems: OperatorOnboardingItem[];
+  workforceMatches: WorkforceMatch[];
+  workforceDeployments: WorkforceDeployment[];
+  clientSops: ClientSop[];
+  operatorQualityReviews: OperatorQualityReview[];
   activities: Activity[];
 };
 
 export const roleLabels: Record<Role, string> = {
   super_admin: "Super Admin",
   academy_ops: "Academy Operations",
+  talent_ops: "Talent & Deployment",
   assessor: "Assessor",
   candidate: "Candidate",
+  operator: "AI Operator",
 };

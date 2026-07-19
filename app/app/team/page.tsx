@@ -21,7 +21,7 @@ export default async function TeamPage() {
           <p>Create an initial password and share it through a secure channel.</p>
           <form action={createTeamMemberAction}>
             <label>Full name<input name="name" required /></label><label>Email address<input type="email" name="email" required /></label>
-            <label>Access role<select name="role" defaultValue="academy_ops"><option value="academy_ops">Academy Operations</option><option value="assessor">Assessor</option><option value="candidate">Candidate</option><option value="super_admin">Super Admin</option></select></label>
+            <label>Access role<select name="role" defaultValue="academy_ops"><option value="academy_ops">Academy Operations</option><option value="talent_ops">Talent & Deployment</option><option value="assessor">Assessor</option><option value="candidate">Candidate</option><option value="operator">AI Operator</option><option value="super_admin">Super Admin</option></select></label>
             <label>Initial password<input type="password" name="password" minLength={10} required /></label>
             <button type="submit" className="os-button"><UserPlus size={15} /> Create account</button>
           </form>

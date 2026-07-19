@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   Activity,
   BookOpenCheck,
+  BriefcaseBusiness,
   Building2,
   ChevronDown,
   LayoutDashboard,
@@ -23,11 +24,12 @@ import { roleLabels, type SafeUser } from "@/lib/os/types";
 
 const staffNavigation = [
   { label: "Overview", href: "/app", icon: LayoutDashboard },
-  { label: "Admissions", href: "/app/admissions", icon: UserSearch },
-  { label: "Cohorts", href: "/app/cohorts", icon: BookOpenCheck },
+  { label: "Admissions", href: "/app/admissions", icon: UserSearch, roles: ["super_admin", "academy_ops", "assessor"] },
+  { label: "Cohorts", href: "/app/cohorts", icon: BookOpenCheck, roles: ["super_admin", "academy_ops", "assessor"] },
   { label: "Corporate", href: "/app/corporate", icon: Building2, roles: ["super_admin", "academy_ops"] },
+  { label: "Workforce", href: "/app/workforce", icon: BriefcaseBusiness, roles: ["super_admin", "academy_ops", "talent_ops"] },
   { label: "Team", href: "/app/team", icon: Users, roles: ["super_admin"] },
-  { label: "Activity", href: "/app/activity", icon: Activity, roles: ["super_admin", "academy_ops"] },
+  { label: "Activity", href: "/app/activity", icon: Activity, roles: ["super_admin", "academy_ops", "talent_ops"] },
   { label: "Settings", href: "/app/settings", icon: Settings, roles: ["super_admin"] },
 ] as const;
 
@@ -36,7 +38,16 @@ const candidateNavigation = [
   { label: "Learning & evidence", href: "/app/learning", icon: BookOpenCheck },
 ] as const;
 
+const operatorNavigation = [
+  { label: "My deployment", href: "/app/workforce/me", icon: BriefcaseBusiness },
+] as const;
+
 function getPageTitle(pathname: string) {
+  if (pathname === "/app/workforce/me") return "My deployment";
+  if (pathname.includes("/workforce/deployments/")) return "Deployment control";
+  if (pathname.includes("/workforce/operators/")) return "Operator record";
+  if (pathname === "/app/workforce/operators") return "Talent bench";
+  if (pathname.startsWith("/app/workforce")) return "Workforce pilot";
   if (pathname.includes("/corporate/") && pathname.endsWith("/diagnostic")) return "AI readiness diagnostic";
   if (pathname.includes("/corporate/") && pathname.endsWith("/proposal")) return "Corporate proposals";
   if (pathname.includes("/corporate/") && pathname.endsWith("/workshops")) return "Enablement workshops";
@@ -63,7 +74,9 @@ export function AppShell({ user, children }: { user: SafeUser; children: React.R
   const [profileOpen, setProfileOpen] = useState(false);
   const navigation = user.role === "candidate"
     ? candidateNavigation
-    : staffNavigation.filter((item) => !("roles" in item) || item.roles.includes(user.role as never));
+    : user.role === "operator"
+      ? operatorNavigation
+      : staffNavigation.filter((item) => !("roles" in item) || item.roles.includes(user.role as never));
 
   return (
     <div className="os-app">
@@ -93,7 +106,7 @@ export function AppShell({ user, children }: { user: SafeUser; children: React.R
 
         <div className="os-sidebar-foot">
           <div className="os-system-status"><i /> All systems operational</div>
-          <span>Phase 3 - Corporate growth</span>
+          <span>Phase 4 - Workforce pilot</span>
         </div>
       </aside>
 
@@ -104,16 +117,16 @@ export function AppShell({ user, children }: { user: SafeUser; children: React.R
           <div className="os-topbar-left">
             <button type="button" className="os-icon-button os-menu-trigger" aria-label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={19} /></button>
             <div>
-              <span className="os-topbar-kicker">{pathname.startsWith("/app/corporate") ? "Lymora Corporate" : "Lymora Academy"}</span>
+              <span className="os-topbar-kicker">{pathname.startsWith("/app/workforce") ? "Lymora Workforce" : pathname.startsWith("/app/corporate") ? "Lymora Corporate" : "Lymora Academy"}</span>
               <strong>{getPageTitle(pathname)}</strong>
             </div>
           </div>
 
           <div className="os-topbar-actions">
-            {user.role !== "candidate" && (
-              <form className="os-global-search" action={pathname.startsWith("/app/corporate") ? "/app/corporate" : "/app/admissions"}>
+            {!["candidate", "operator"].includes(user.role) && (
+              <form className="os-global-search" action={pathname.startsWith("/app/workforce") ? "/app/workforce/operators" : pathname.startsWith("/app/corporate") ? "/app/corporate" : "/app/admissions"}>
                 <Search size={16} />
-                <input name="q" aria-label={pathname.startsWith("/app/corporate") ? "Search accounts" : "Search applicants"} placeholder={pathname.startsWith("/app/corporate") ? "Search accounts" : "Search applicants"} />
+                <input name="q" aria-label={pathname.startsWith("/app/workforce") ? "Search operators" : pathname.startsWith("/app/corporate") ? "Search accounts" : "Search applicants"} placeholder={pathname.startsWith("/app/workforce") ? "Search operators" : pathname.startsWith("/app/corporate") ? "Search accounts" : "Search applicants"} />
               </form>
             )}
             <div className="os-profile-wrap">

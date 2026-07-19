@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   ArrowRight,
   CalendarDays,
@@ -21,6 +22,8 @@ export default async function CommandCentrePage() {
   const user = await requireUser();
   const database = await readDatabase();
   if (user.role === "candidate") return <CandidateDashboard user={user} database={database} />;
+  if (user.role === "operator") redirect("/app/workforce/me");
+  if (user.role === "talent_ops") redirect("/app/workforce");
 
   const activeApplications = database.applications.filter((application) => !["declined", "waitlisted"].includes(application.status));
   const newApplications = database.applications.filter((application) => application.status === "new");
