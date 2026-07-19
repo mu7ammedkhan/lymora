@@ -83,11 +83,108 @@ export type Enrollment = {
   createdAt: string;
 };
 
+export type LearningModule = {
+  id: string;
+  programCode: string;
+  code: string;
+  weekNumber: number;
+  title: string;
+  summary: string;
+  competencyDomain: string;
+  liveHours: number;
+  status: "draft" | "published" | "archived";
+  sortOrder: number;
+  createdAt: string;
+};
+
+export type CohortModule = {
+  id: string;
+  cohortId: string;
+  moduleId: string;
+  opensAt: string;
+  dueAt: string;
+  status: "locked" | "open" | "completed";
+};
+
+export type CohortSession = {
+  id: string;
+  cohortId: string;
+  moduleId: string | null;
+  title: string;
+  startsAt: string;
+  endsAt: string;
+  deliveryMode: "live_online" | "in_person" | "hybrid";
+  joinUrl: string;
+  status: "scheduled" | "live" | "completed" | "cancelled";
+  createdBy: string | null;
+  createdAt: string;
+};
+
+export type AttendanceRecord = {
+  id: string;
+  sessionId: string;
+  enrollmentId: string;
+  status: "present" | "late" | "excused" | "absent";
+  minutesAttended: number;
+  notes: string;
+  markedBy: string | null;
+  markedAt: string;
+};
+
+export type AssessmentComponent = {
+  id: string;
+  programCode: string;
+  code: string;
+  title: string;
+  description: string;
+  weight: number;
+  passThreshold: number;
+  responsibleAiGate: boolean;
+  sortOrder: number;
+  createdAt: string;
+};
+
+export type AssessmentSubmission = {
+  id: string;
+  enrollmentId: string;
+  componentId: string;
+  status: "not_started" | "submitted" | "under_review" | "revision_requested" | "accepted";
+  evidenceUrl: string;
+  submissionNotes: string;
+  submittedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AssessmentResult = {
+  id: string;
+  submissionId: string;
+  score: number;
+  outcome: "pass" | "resubmit" | "fail";
+  feedback: string;
+  gradedBy: string | null;
+  gradedAt: string;
+};
+
+export type Credential = {
+  id: string;
+  enrollmentId: string;
+  credentialNumber: string;
+  status: "eligible" | "issued" | "revoked" | "expired";
+  overallScore: number;
+  classification: "pass" | "distinction";
+  issuedAt: string | null;
+  expiresAt: string | null;
+  verificationCode: string;
+  issuedBy: string | null;
+  createdAt: string;
+};
+
 export type Activity = {
   id: string;
   actorId: string | null;
   action: string;
-  entityType: "application" | "cohort" | "enrollment" | "session" | "user";
+  entityType: "application" | "cohort" | "enrollment" | "session" | "user" | "assessment" | "credential";
   entityId: string;
   detail: string;
   createdAt: string;
@@ -99,6 +196,14 @@ export type DatabaseSchema = {
   applications: Application[];
   cohorts: Cohort[];
   enrollments: Enrollment[];
+  learningModules: LearningModule[];
+  cohortModules: CohortModule[];
+  cohortSessions: CohortSession[];
+  attendanceRecords: AttendanceRecord[];
+  assessmentComponents: AssessmentComponent[];
+  assessmentSubmissions: AssessmentSubmission[];
+  assessmentResults: AssessmentResult[];
+  credentials: Credential[];
   activities: Activity[];
 };
 

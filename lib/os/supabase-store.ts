@@ -1,6 +1,22 @@
 import { randomUUID } from "node:crypto";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import type { Activity, Application, Cohort, DatabaseSchema, Enrollment, Role, User } from "@/lib/os/types";
+import type {
+  Activity,
+  Application,
+  AssessmentComponent,
+  AssessmentResult,
+  AssessmentSubmission,
+  AttendanceRecord,
+  Cohort,
+  CohortModule,
+  CohortSession,
+  Credential,
+  DatabaseSchema,
+  Enrollment,
+  LearningModule,
+  Role,
+  User,
+} from "@/lib/os/types";
 import type { Database } from "@/lib/supabase/database.types";
 
 type Row = Record<string, unknown>;
@@ -54,6 +70,67 @@ function rowToActivity(row: Row): Activity {
   };
 }
 
+function rowToLearningModule(row: Row): LearningModule {
+  return {
+    id: String(row.id), programCode: String(row.program_code), code: String(row.code), weekNumber: Number(row.week_number),
+    title: String(row.title), summary: String(row.summary), competencyDomain: String(row.competency_domain), liveHours: Number(row.live_hours),
+    status: row.status as LearningModule["status"], sortOrder: Number(row.sort_order), createdAt: String(row.created_at),
+  };
+}
+
+function rowToCohortModule(row: Row): CohortModule {
+  return { id: String(row.id), cohortId: String(row.cohort_id), moduleId: String(row.module_id), opensAt: String(row.opens_at), dueAt: String(row.due_at), status: row.status as CohortModule["status"] };
+}
+
+function rowToCohortSession(row: Row): CohortSession {
+  return {
+    id: String(row.id), cohortId: String(row.cohort_id), moduleId: row.module_id ? String(row.module_id) : null, title: String(row.title),
+    startsAt: String(row.starts_at), endsAt: String(row.ends_at), deliveryMode: row.delivery_mode as CohortSession["deliveryMode"],
+    joinUrl: String(row.join_url), status: row.status as CohortSession["status"], createdBy: row.created_by ? String(row.created_by) : null,
+    createdAt: String(row.created_at),
+  };
+}
+
+function rowToAttendance(row: Row): AttendanceRecord {
+  return {
+    id: String(row.id), sessionId: String(row.session_id), enrollmentId: String(row.enrollment_id), status: row.status as AttendanceRecord["status"],
+    minutesAttended: Number(row.minutes_attended), notes: String(row.notes), markedBy: row.marked_by ? String(row.marked_by) : null,
+    markedAt: String(row.marked_at),
+  };
+}
+
+function rowToAssessmentComponent(row: Row): AssessmentComponent {
+  return {
+    id: String(row.id), programCode: String(row.program_code), code: String(row.code), title: String(row.title), description: String(row.description),
+    weight: Number(row.weight), passThreshold: Number(row.pass_threshold), responsibleAiGate: Boolean(row.responsible_ai_gate),
+    sortOrder: Number(row.sort_order), createdAt: String(row.created_at),
+  };
+}
+
+function rowToAssessmentSubmission(row: Row): AssessmentSubmission {
+  return {
+    id: String(row.id), enrollmentId: String(row.enrollment_id), componentId: String(row.component_id), status: row.status as AssessmentSubmission["status"],
+    evidenceUrl: String(row.evidence_url), submissionNotes: String(row.submission_notes), submittedAt: row.submitted_at ? String(row.submitted_at) : null,
+    createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function rowToAssessmentResult(row: Row): AssessmentResult {
+  return {
+    id: String(row.id), submissionId: String(row.submission_id), score: Number(row.score), outcome: row.outcome as AssessmentResult["outcome"],
+    feedback: String(row.feedback), gradedBy: row.graded_by ? String(row.graded_by) : null, gradedAt: String(row.graded_at),
+  };
+}
+
+function rowToCredential(row: Row): Credential {
+  return {
+    id: String(row.id), enrollmentId: String(row.enrollment_id), credentialNumber: String(row.credential_number), status: row.status as Credential["status"],
+    overallScore: Number(row.overall_score), classification: row.classification as Credential["classification"],
+    issuedAt: row.issued_at ? String(row.issued_at) : null, expiresAt: row.expires_at ? String(row.expires_at) : null,
+    verificationCode: String(row.verification_code), issuedBy: row.issued_by ? String(row.issued_by) : null, createdAt: String(row.created_at),
+  };
+}
+
 function applicationToRow(item: Application) {
   return {
     id: item.id, application_number: item.number, full_name: item.fullName, email: item.email, phone: item.phone, location: item.location,
@@ -80,6 +157,38 @@ function profileToRow(item: User) {
   return { id: item.id, full_name: item.name, email: item.email, role: item.role, status: item.status, application_id: item.applicationId ?? null, last_login_at: item.lastLoginAt, created_at: item.createdAt };
 }
 
+function learningModuleToRow(item: LearningModule) {
+  return { id: item.id, program_code: item.programCode, code: item.code, week_number: item.weekNumber, title: item.title, summary: item.summary, competency_domain: item.competencyDomain, live_hours: item.liveHours, status: item.status, sort_order: item.sortOrder, created_at: item.createdAt };
+}
+
+function cohortModuleToRow(item: CohortModule) {
+  return { id: item.id, cohort_id: item.cohortId, module_id: item.moduleId, opens_at: item.opensAt, due_at: item.dueAt, status: item.status };
+}
+
+function cohortSessionToRow(item: CohortSession) {
+  return { id: item.id, cohort_id: item.cohortId, module_id: item.moduleId, title: item.title, starts_at: item.startsAt, ends_at: item.endsAt, delivery_mode: item.deliveryMode, join_url: item.joinUrl, status: item.status, created_by: item.createdBy, created_at: item.createdAt };
+}
+
+function attendanceToRow(item: AttendanceRecord) {
+  return { id: item.id, session_id: item.sessionId, enrollment_id: item.enrollmentId, status: item.status, minutes_attended: item.minutesAttended, notes: item.notes, marked_by: item.markedBy, marked_at: item.markedAt };
+}
+
+function assessmentComponentToRow(item: AssessmentComponent) {
+  return { id: item.id, program_code: item.programCode, code: item.code, title: item.title, description: item.description, weight: item.weight, pass_threshold: item.passThreshold, responsible_ai_gate: item.responsibleAiGate, sort_order: item.sortOrder, created_at: item.createdAt };
+}
+
+function assessmentSubmissionToRow(item: AssessmentSubmission) {
+  return { id: item.id, enrollment_id: item.enrollmentId, component_id: item.componentId, status: item.status, evidence_url: item.evidenceUrl, submission_notes: item.submissionNotes, submitted_at: item.submittedAt, created_at: item.createdAt, updated_at: item.updatedAt };
+}
+
+function assessmentResultToRow(item: AssessmentResult) {
+  return { id: item.id, submission_id: item.submissionId, score: item.score, outcome: item.outcome, feedback: item.feedback, graded_by: item.gradedBy, graded_at: item.gradedAt };
+}
+
+function credentialToRow(item: Credential) {
+  return { id: item.id, enrollment_id: item.enrollmentId, credential_number: item.credentialNumber, status: item.status, overall_score: item.overallScore, classification: item.classification, issued_at: item.issuedAt, expires_at: item.expiresAt, verification_code: item.verificationCode, issued_by: item.issuedBy, created_at: item.createdAt };
+}
+
 function changedItems<T extends { id: string }>(before: T[], after: T[]) {
   const previous = new Map(before.map((item) => [item.id, JSON.stringify(item)]));
   return after.filter((item) => previous.get(item.id) !== JSON.stringify(item));
@@ -92,21 +201,40 @@ async function requireRows(table: string, result: { data: unknown[] | null; erro
 
 export async function readSupabaseDatabase(): Promise<DatabaseSchema> {
   const client = createSupabaseAdminClient();
-  const [profilesResult, applicationsResult, cohortsResult, enrollmentsResult, activitiesResult] = await Promise.all([
+  const [profilesResult, applicationsResult, cohortsResult, enrollmentsResult, modulesResult, cohortModulesResult, sessionsResult, attendanceResult, componentsResult, submissionsResult, resultsResult, credentialsResult, activitiesResult] = await Promise.all([
     client.from("profiles").select("*").order("created_at", { ascending: true }),
     client.from("applications").select("*").order("created_at", { ascending: false }),
     client.from("cohorts").select("*").order("start_date", { ascending: true }),
     client.from("enrollments").select("*").order("created_at", { ascending: true }),
+    client.from("learning_modules").select("*").order("sort_order", { ascending: true }),
+    client.from("cohort_modules").select("*").order("opens_at", { ascending: true }),
+    client.from("cohort_sessions").select("*").order("starts_at", { ascending: true }),
+    client.from("attendance_records").select("*").order("marked_at", { ascending: false }),
+    client.from("assessment_components").select("*").order("sort_order", { ascending: true }),
+    client.from("assessment_submissions").select("*").order("updated_at", { ascending: false }),
+    client.from("assessment_results").select("*").order("graded_at", { ascending: false }),
+    client.from("credentials").select("*").order("created_at", { ascending: false }),
     client.from("activities").select("*").order("created_at", { ascending: false }).limit(500),
   ]);
   const profiles = await requireRows("profiles", profilesResult);
   const applications = await requireRows("applications", applicationsResult);
   const cohorts = await requireRows("cohorts", cohortsResult);
   const enrollments = await requireRows("enrollments", enrollmentsResult);
+  const modules = await requireRows("learning_modules", modulesResult);
+  const cohortModules = await requireRows("cohort_modules", cohortModulesResult);
+  const sessions = await requireRows("cohort_sessions", sessionsResult);
+  const attendance = await requireRows("attendance_records", attendanceResult);
+  const components = await requireRows("assessment_components", componentsResult);
+  const submissions = await requireRows("assessment_submissions", submissionsResult);
+  const results = await requireRows("assessment_results", resultsResult);
+  const credentials = await requireRows("credentials", credentialsResult);
   const activities = await requireRows("activities", activitiesResult);
   return {
     users: profiles.map(profileToUser), sessions: [], applications: applications.map(rowToApplication), cohorts: cohorts.map(rowToCohort),
-    enrollments: enrollments.map(rowToEnrollment), activities: activities.map(rowToActivity),
+    enrollments: enrollments.map(rowToEnrollment), learningModules: modules.map(rowToLearningModule), cohortModules: cohortModules.map(rowToCohortModule),
+    cohortSessions: sessions.map(rowToCohortSession), attendanceRecords: attendance.map(rowToAttendance), assessmentComponents: components.map(rowToAssessmentComponent),
+    assessmentSubmissions: submissions.map(rowToAssessmentSubmission), assessmentResults: results.map(rowToAssessmentResult), credentials: credentials.map(rowToCredential),
+    activities: activities.map(rowToActivity),
   };
 }
 
@@ -125,6 +253,14 @@ export async function updateSupabaseDatabase<T>(operation: (data: DatabaseSchema
   await upsertRows("applications", changedItems(before.applications, after.applications).map(applicationToRow));
   await upsertRows("cohorts", changedItems(before.cohorts, after.cohorts).map(cohortToRow));
   await upsertRows("enrollments", changedItems(before.enrollments, after.enrollments).map(enrollmentToRow));
+  await upsertRows("learning_modules", changedItems(before.learningModules, after.learningModules).map(learningModuleToRow));
+  await upsertRows("cohort_modules", changedItems(before.cohortModules, after.cohortModules).map(cohortModuleToRow));
+  await upsertRows("cohort_sessions", changedItems(before.cohortSessions, after.cohortSessions).map(cohortSessionToRow));
+  await upsertRows("attendance_records", changedItems(before.attendanceRecords, after.attendanceRecords).map(attendanceToRow));
+  await upsertRows("assessment_components", changedItems(before.assessmentComponents, after.assessmentComponents).map(assessmentComponentToRow));
+  await upsertRows("assessment_submissions", changedItems(before.assessmentSubmissions, after.assessmentSubmissions).map(assessmentSubmissionToRow));
+  await upsertRows("assessment_results", changedItems(before.assessmentResults, after.assessmentResults).map(assessmentResultToRow));
+  await upsertRows("credentials", changedItems(before.credentials, after.credentials).map(credentialToRow));
   await upsertRows("activities", changedItems(before.activities, after.activities).map(activityToRow));
   return result;
 }

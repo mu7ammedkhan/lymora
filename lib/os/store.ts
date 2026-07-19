@@ -17,6 +17,14 @@ const emptyDatabase: DatabaseSchema = {
   applications: [],
   cohorts: [],
   enrollments: [],
+  learningModules: [],
+  cohortModules: [],
+  cohortSessions: [],
+  attendanceRecords: [],
+  assessmentComponents: [],
+  assessmentSubmissions: [],
+  assessmentResults: [],
+  credentials: [],
   activities: [],
 };
 

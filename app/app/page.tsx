@@ -118,6 +118,7 @@ function CandidateDashboard({ user, database }: { user: Awaited<ReturnType<typeo
   const application = database.applications.find((item) => item.id === user.applicationId);
   const enrollment = database.enrollments.find((item) => item.applicationId === application?.id);
   const cohort = database.cohorts.find((item) => item.id === enrollment?.cohortId);
+  const nextSession = database.cohortSessions.filter((item) => item.cohortId === cohort?.id && item.status !== "cancelled" && new Date(item.startsAt) > new Date()).sort((a, b) => a.startsAt.localeCompare(b.startsAt))[0];
   const checklist = [
     { label: "Accept your place", done: true },
     { label: "Complete learner profile", done: true },
@@ -134,7 +135,7 @@ function CandidateDashboard({ user, database }: { user: Awaited<ReturnType<typeo
       </section>
       <div className="os-candidate-grid">
         <section className="os-panel"><div className="os-panel-head"><div><span className="os-label">Before you begin</span><h2>Onboarding checklist</h2></div><strong>2 of 4</strong></div><div className="os-checklist">{checklist.map((item) => <div key={item.label} className={item.done ? "is-done" : ""}><span>{item.done ? <Check size={15} /> : null}</span><strong>{item.label}</strong>{!item.done && <button type="button">Complete</button>}</div>)}</div></section>
-        <section className="os-panel os-next-session"><span className="os-label">Coming up</span><div className="os-date-block"><strong>17</strong><span>AUG<br />2026</span></div><h2>Orientation and operating standards</h2><p>Live online · 7:00 PM GST</p><button className="os-button" type="button" disabled>Access opens 15 minutes before</button></section>
+        <section className="os-panel os-next-session"><span className="os-label">Coming up</span>{nextSession ? <><div className="os-date-block"><strong>{formatDate(nextSession.startsAt, { day: "2-digit" })}</strong><span>{formatDate(nextSession.startsAt, { month: "short" }).toUpperCase()}<br />{formatDate(nextSession.startsAt, { year: "numeric" })}</span></div><h2>{nextSession.title}</h2><p>{nextSession.deliveryMode.replaceAll("_", " ")} · {formatDate(nextSession.startsAt, { hour: "numeric", minute: "2-digit" })}</p>{nextSession.joinUrl ? <a className="os-button" href={nextSession.joinUrl}>Open session</a> : <button className="os-button" type="button" disabled>Access link pending</button>}</> : <><h2>No upcoming session.</h2><p>Your Academy schedule will appear here.</p></>}</section>
       </div>
     </div>
   );

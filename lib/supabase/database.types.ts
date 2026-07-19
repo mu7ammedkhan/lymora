@@ -141,6 +141,302 @@ export type Database = {
           },
         ]
       }
+      assessment_components: {
+        Row: {
+          code: string
+          created_at: string
+          description: string
+          id: string
+          pass_threshold: number
+          program_code: string
+          responsible_ai_gate: boolean
+          sort_order: number
+          title: string
+          weight: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description: string
+          id?: string
+          pass_threshold?: number
+          program_code?: string
+          responsible_ai_gate?: boolean
+          sort_order?: number
+          title: string
+          weight: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          pass_threshold?: number
+          program_code?: string
+          responsible_ai_gate?: boolean
+          sort_order?: number
+          title?: string
+          weight?: number
+        }
+        Relationships: []
+      }
+      assessment_results: {
+        Row: {
+          feedback: string
+          graded_at: string
+          graded_by: string | null
+          id: string
+          outcome: Database["public"]["Enums"]["assessment_outcome"]
+          score: number
+          submission_id: string
+        }
+        Insert: {
+          feedback?: string
+          graded_at?: string
+          graded_by?: string | null
+          id?: string
+          outcome: Database["public"]["Enums"]["assessment_outcome"]
+          score: number
+          submission_id: string
+        }
+        Update: {
+          feedback?: string
+          graded_at?: string
+          graded_by?: string | null
+          id?: string
+          outcome?: Database["public"]["Enums"]["assessment_outcome"]
+          score?: number
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_results_graded_by_fkey"
+            columns: ["graded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_results_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: true
+            referencedRelation: "assessment_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_submissions: {
+        Row: {
+          component_id: string
+          created_at: string
+          enrollment_id: string
+          evidence_url: string
+          id: string
+          status: Database["public"]["Enums"]["submission_status"]
+          submission_notes: string
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          component_id: string
+          created_at?: string
+          enrollment_id: string
+          evidence_url?: string
+          id?: string
+          status?: Database["public"]["Enums"]["submission_status"]
+          submission_notes?: string
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          component_id?: string
+          created_at?: string
+          enrollment_id?: string
+          evidence_url?: string
+          id?: string
+          status?: Database["public"]["Enums"]["submission_status"]
+          submission_notes?: string
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_submissions_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_submissions_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance_records: {
+        Row: {
+          enrollment_id: string
+          id: string
+          marked_at: string
+          marked_by: string | null
+          minutes_attended: number
+          notes: string
+          session_id: string
+          status: Database["public"]["Enums"]["attendance_status"]
+        }
+        Insert: {
+          enrollment_id: string
+          id?: string
+          marked_at?: string
+          marked_by?: string | null
+          minutes_attended?: number
+          notes?: string
+          session_id: string
+          status: Database["public"]["Enums"]["attendance_status"]
+        }
+        Update: {
+          enrollment_id?: string
+          id?: string
+          marked_at?: string
+          marked_by?: string | null
+          minutes_attended?: number
+          notes?: string
+          session_id?: string
+          status?: Database["public"]["Enums"]["attendance_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_records_marked_by_fkey"
+            columns: ["marked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_records_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cohort_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cohort_modules: {
+        Row: {
+          cohort_id: string
+          due_at: string
+          id: string
+          module_id: string
+          opens_at: string
+          status: Database["public"]["Enums"]["cohort_module_status"]
+        }
+        Insert: {
+          cohort_id: string
+          due_at: string
+          id?: string
+          module_id: string
+          opens_at: string
+          status?: Database["public"]["Enums"]["cohort_module_status"]
+        }
+        Update: {
+          cohort_id?: string
+          due_at?: string
+          id?: string
+          module_id?: string
+          opens_at?: string
+          status?: Database["public"]["Enums"]["cohort_module_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_modules_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohort_modules_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cohort_sessions: {
+        Row: {
+          cohort_id: string
+          created_at: string
+          created_by: string | null
+          delivery_mode: Database["public"]["Enums"]["session_delivery_mode"]
+          ends_at: string
+          id: string
+          join_url: string
+          module_id: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["session_status"]
+          title: string
+        }
+        Insert: {
+          cohort_id: string
+          created_at?: string
+          created_by?: string | null
+          delivery_mode?: Database["public"]["Enums"]["session_delivery_mode"]
+          ends_at: string
+          id?: string
+          join_url?: string
+          module_id?: string | null
+          starts_at: string
+          status?: Database["public"]["Enums"]["session_status"]
+          title: string
+        }
+        Update: {
+          cohort_id?: string
+          created_at?: string
+          created_by?: string | null
+          delivery_mode?: Database["public"]["Enums"]["session_delivery_mode"]
+          ends_at?: string
+          id?: string
+          join_url?: string
+          module_id?: string | null
+          starts_at?: string
+          status?: Database["public"]["Enums"]["session_status"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cohort_sessions_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohort_sessions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cohort_sessions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cohorts: {
         Row: {
           capacity: number
@@ -179,6 +475,63 @@ export type Database = {
           status?: Database["public"]["Enums"]["cohort_status"]
         }
         Relationships: []
+      }
+      credentials: {
+        Row: {
+          classification: Database["public"]["Enums"]["credential_classification"]
+          created_at: string
+          credential_number: string
+          enrollment_id: string
+          expires_at: string | null
+          id: string
+          issued_at: string | null
+          issued_by: string | null
+          overall_score: number
+          status: Database["public"]["Enums"]["credential_status"]
+          verification_code: string
+        }
+        Insert: {
+          classification: Database["public"]["Enums"]["credential_classification"]
+          created_at?: string
+          credential_number: string
+          enrollment_id: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string | null
+          issued_by?: string | null
+          overall_score: number
+          status?: Database["public"]["Enums"]["credential_status"]
+          verification_code?: string
+        }
+        Update: {
+          classification?: Database["public"]["Enums"]["credential_classification"]
+          created_at?: string
+          credential_number?: string
+          enrollment_id?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string | null
+          issued_by?: string | null
+          overall_score?: number
+          status?: Database["public"]["Enums"]["credential_status"]
+          verification_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credentials_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: true
+            referencedRelation: "enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credentials_issued_by_fkey"
+            columns: ["issued_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       enrollments: {
         Row: {
@@ -221,6 +574,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      learning_modules: {
+        Row: {
+          code: string
+          competency_domain: string
+          created_at: string
+          id: string
+          live_hours: number
+          program_code: string
+          sort_order: number
+          status: Database["public"]["Enums"]["learning_module_status"]
+          summary: string
+          title: string
+          week_number: number
+        }
+        Insert: {
+          code: string
+          competency_domain: string
+          created_at?: string
+          id?: string
+          live_hours?: number
+          program_code?: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["learning_module_status"]
+          summary: string
+          title: string
+          week_number: number
+        }
+        Update: {
+          code?: string
+          competency_domain?: string
+          created_at?: string
+          id?: string
+          live_hours?: number
+          program_code?: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["learning_module_status"]
+          summary?: string
+          title?: string
+          week_number?: number
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -281,6 +676,8 @@ export type Database = {
         | "enrollment"
         | "session"
         | "user"
+        | "assessment"
+        | "credential"
       app_role: "super_admin" | "academy_ops" | "assessor" | "candidate"
       application_source: "website" | "manual" | "referral"
       application_status:
@@ -290,13 +687,27 @@ export type Database = {
         | "accepted"
         | "waitlisted"
         | "declined"
+      assessment_outcome: "pass" | "resubmit" | "fail"
+      attendance_status: "present" | "late" | "excused" | "absent"
+      cohort_module_status: "locked" | "open" | "completed"
       cohort_status: "draft" | "enrolling" | "active" | "completed"
+      credential_classification: "pass" | "distinction"
+      credential_status: "eligible" | "issued" | "revoked" | "expired"
       enrollment_status:
         | "invited"
         | "enrolled"
         | "active"
         | "completed"
         | "withdrawn"
+      learning_module_status: "draft" | "published" | "archived"
+      session_delivery_mode: "live_online" | "in_person" | "hybrid"
+      session_status: "scheduled" | "live" | "completed" | "cancelled"
+      submission_status:
+        | "not_started"
+        | "submitted"
+        | "under_review"
+        | "revision_requested"
+        | "accepted"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -431,6 +842,8 @@ export const Constants = {
         "enrollment",
         "session",
         "user",
+        "assessment",
+        "credential",
       ],
       app_role: ["super_admin", "academy_ops", "assessor", "candidate"],
       application_source: ["website", "manual", "referral"],
@@ -442,13 +855,28 @@ export const Constants = {
         "waitlisted",
         "declined",
       ],
+      assessment_outcome: ["pass", "resubmit", "fail"],
+      attendance_status: ["present", "late", "excused", "absent"],
+      cohort_module_status: ["locked", "open", "completed"],
       cohort_status: ["draft", "enrolling", "active", "completed"],
+      credential_classification: ["pass", "distinction"],
+      credential_status: ["eligible", "issued", "revoked", "expired"],
       enrollment_status: [
         "invited",
         "enrolled",
         "active",
         "completed",
         "withdrawn",
+      ],
+      learning_module_status: ["draft", "published", "archived"],
+      session_delivery_mode: ["live_online", "in_person", "hybrid"],
+      session_status: ["scheduled", "live", "completed", "cancelled"],
+      submission_status: [
+        "not_started",
+        "submitted",
+        "under_review",
+        "revision_requested",
+        "accepted",
       ],
     },
   },

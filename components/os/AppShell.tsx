@@ -31,18 +31,22 @@ const staffNavigation = [
 
 const candidateNavigation = [
   { label: "My programme", href: "/app", icon: LayoutDashboard },
-  { label: "Learning plan", href: "/app/learning", icon: BookOpenCheck },
+  { label: "Learning & evidence", href: "/app/learning", icon: BookOpenCheck },
 ] as const;
 
 function getPageTitle(pathname: string) {
   if (pathname.startsWith("/app/admissions/")) return "Applicant record";
   if (pathname === "/app/admissions") return "Admissions";
+  if (pathname.includes("/delivery/")) return "Session attendance";
+  if (pathname.endsWith("/delivery")) return "Academy delivery";
+  if (pathname.includes("/assessment/")) return "Learner assessment";
+  if (pathname.endsWith("/assessment")) return "Cohort gradebook";
   if (pathname.startsWith("/app/cohorts/")) return "Cohort workspace";
   if (pathname === "/app/cohorts") return "Cohorts";
   if (pathname === "/app/team") return "Team access";
   if (pathname === "/app/activity") return "Activity log";
   if (pathname === "/app/settings") return "Platform settings";
-  if (pathname === "/app/learning") return "Learning plan";
+  if (pathname === "/app/learning") return "Learning and evidence";
   return "Command centre";
 }
 
@@ -82,7 +86,7 @@ export function AppShell({ user, children }: { user: SafeUser; children: React.R
 
         <div className="os-sidebar-foot">
           <div className="os-system-status"><i /> All systems operational</div>
-          <span>Phase 1 · Academy operations</span>
+          <span>Phase 2 · Academy delivery</span>
         </div>
       </aside>
 

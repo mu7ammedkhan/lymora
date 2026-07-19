@@ -10,6 +10,7 @@ import { updateDatabase } from "@/lib/os/store";
 import { applicationStatuses } from "@/lib/os/types";
 import { createSupabaseTeamMember, setSupabaseUserStatus } from "@/lib/os/supabase-store";
 import { wantsSupabase } from "@/lib/supabase/config";
+import { getAssessmentSummary } from "@/lib/os/academy";
 
 const staffRoles = ["super_admin", "academy_ops", "assessor"] as const;
 
@@ -167,4 +168,161 @@ export async function changeUserStatusAction(formData: FormData) {
     database.activities.unshift({ id: randomUUID(), actorId: actor.id, action: "user.status_changed", entityType: "user", entityId: user.id, detail: `${user.status === "active" ? "Enabled" : "Disabled"} access for ${user.name}`, createdAt: new Date().toISOString() });
   });
   revalidatePath("/app/team");
+}
+
+export async function createCohortSessionAction(formData: FormData) {
+  const user = await requireRole(["super_admin", "academy_ops"]);
+  const parsed = z.object({
+    cohortId: z.string().uuid(), moduleId: z.string().uuid().optional(), title: z.string().min(3).max(160),
+    startsAt: z.string().min(10), endsAt: z.string().min(10), deliveryMode: z.enum(["live_online", "in_person", "hybrid"]),
+    joinUrl: z.union([z.literal(""), z.string().url()]),
+  }).safeParse({ ...Object.fromEntries(formData), moduleId: formData.get("moduleId") || undefined });
+  if (!parsed.success) return;
+  const startsAt = new Date(parsed.data.startsAt);
+  const endsAt = new Date(parsed.data.endsAt);
+  if (!Number.isFinite(startsAt.getTime()) || endsAt <= startsAt) return;
+  const sessionId = randomUUID();
+  await updateDatabase((database) => {
+    const cohort = database.cohorts.find((item) => item.id === parsed.data.cohortId);
+    if (!cohort) return;
+    if (parsed.data.moduleId && !database.cohortModules.some((item) => item.cohortId === cohort.id && item.moduleId === parsed.data.moduleId)) return;
+    const now = new Date().toISOString();
+    database.cohortSessions.push({
+      id: sessionId, cohortId: cohort.id, moduleId: parsed.data.moduleId ?? null, title: parsed.data.title,
+      startsAt: startsAt.toISOString(), endsAt: endsAt.toISOString(), deliveryMode: parsed.data.deliveryMode,
+      joinUrl: parsed.data.joinUrl, status: "scheduled", createdBy: user.id, createdAt: now,
+    });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "session.created", entityType: "session", entityId: sessionId, detail: `Scheduled ${parsed.data.title} for ${cohort.code}`, createdAt: now });
+  });
+  revalidatePath(`/app/cohorts/${parsed.data.cohortId}/delivery`);
+}
+
+export async function updateCohortModuleStatusAction(formData: FormData) {
+  const user = await requireRole(["super_admin", "academy_ops"]);
+  const parsed = z.object({ cohortId: z.string().uuid(), cohortModuleId: z.string().uuid(), status: z.enum(["locked", "open", "completed"]) }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const cohortModule = database.cohortModules.find((item) => item.id === parsed.data.cohortModuleId && item.cohortId === parsed.data.cohortId);
+    if (!cohortModule) return;
+    cohortModule.status = parsed.data.status;
+    const module = database.learningModules.find((item) => item.id === cohortModule.moduleId);
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "module.status_changed", entityType: "session", entityId: cohortModule.id, detail: `${module?.title ?? "Module"} is now ${cohortModule.status}`, createdAt: new Date().toISOString() });
+  });
+  revalidatePath(`/app/cohorts/${parsed.data.cohortId}/delivery`);
+  revalidatePath("/app/learning");
+}
+
+export async function updateSessionStatusAction(formData: FormData) {
+  const user = await requireRole(["super_admin", "academy_ops"]);
+  const parsed = z.object({ cohortId: z.string().uuid(), sessionId: z.string().uuid(), status: z.enum(["scheduled", "live", "completed", "cancelled"]) }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const session = database.cohortSessions.find((item) => item.id === parsed.data.sessionId && item.cohortId === parsed.data.cohortId);
+    if (!session) return;
+    session.status = parsed.data.status;
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "session.status_changed", entityType: "session", entityId: session.id, detail: `Changed ${session.title} to ${session.status}`, createdAt: new Date().toISOString() });
+  });
+  revalidatePath(`/app/cohorts/${parsed.data.cohortId}/delivery`);
+  revalidatePath(`/app/cohorts/${parsed.data.cohortId}/delivery/${parsed.data.sessionId}`);
+}
+
+export async function markAttendanceAction(formData: FormData) {
+  const user = await requireRole(["super_admin", "academy_ops"]);
+  const parsed = z.object({
+    cohortId: z.string().uuid(), sessionId: z.string().uuid(), enrollmentId: z.string().uuid(),
+    status: z.enum(["present", "late", "excused", "absent"]), minutesAttended: z.coerce.number().int().min(0).max(1440), notes: z.string().max(1000).optional(),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const session = database.cohortSessions.find((item) => item.id === parsed.data.sessionId && item.cohortId === parsed.data.cohortId);
+    const enrollment = database.enrollments.find((item) => item.id === parsed.data.enrollmentId && item.cohortId === parsed.data.cohortId);
+    if (!session || !enrollment) return;
+    const sessionMinutes = Math.ceil((new Date(session.endsAt).getTime() - new Date(session.startsAt).getTime()) / 60_000);
+    if (parsed.data.minutesAttended > sessionMinutes) return;
+    if (["absent", "excused"].includes(parsed.data.status) && parsed.data.minutesAttended !== 0) return;
+    const now = new Date().toISOString();
+    const record = database.attendanceRecords.find((item) => item.sessionId === session.id && item.enrollmentId === enrollment.id);
+    if (record) Object.assign(record, { status: parsed.data.status, minutesAttended: parsed.data.minutesAttended, notes: parsed.data.notes ?? "", markedBy: user.id, markedAt: now });
+    else database.attendanceRecords.push({ id: randomUUID(), sessionId: session.id, enrollmentId: enrollment.id, status: parsed.data.status, minutesAttended: parsed.data.minutesAttended, notes: parsed.data.notes ?? "", markedBy: user.id, markedAt: now });
+    const application = database.applications.find((item) => item.id === enrollment.applicationId);
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "attendance.marked", entityType: "session", entityId: session.id, detail: `Marked ${application?.fullName ?? "learner"} ${parsed.data.status} for ${session.title}`, createdAt: now });
+  });
+  revalidatePath(`/app/cohorts/${parsed.data.cohortId}/delivery/${parsed.data.sessionId}`);
+}
+
+export async function submitAssessmentEvidenceAction(formData: FormData) {
+  const user = await requireRole(["candidate"]);
+  const parsed = z.object({ componentId: z.string().uuid(), evidenceUrl: z.string().url().max(1000), submissionNotes: z.string().min(10).max(3000) }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success || !user.applicationId) return;
+  await updateDatabase((database) => {
+    const enrollment = database.enrollments.find((item) => item.applicationId === user.applicationId && ["enrolled", "active"].includes(item.status));
+    const component = database.assessmentComponents.find((item) => item.id === parsed.data.componentId);
+    const cohort = database.cohorts.find((item) => item.id === enrollment?.cohortId);
+    if (!enrollment || !cohort || !component || component.programCode !== cohort.code.split("-")[0]) return;
+    const now = new Date().toISOString();
+    const submission = database.assessmentSubmissions.find((item) => item.enrollmentId === enrollment.id && item.componentId === component.id);
+    if (submission) Object.assign(submission, { status: "submitted" as const, evidenceUrl: parsed.data.evidenceUrl, submissionNotes: parsed.data.submissionNotes, submittedAt: now, updatedAt: now });
+    else database.assessmentSubmissions.push({ id: randomUUID(), enrollmentId: enrollment.id, componentId: component.id, status: "submitted", evidenceUrl: parsed.data.evidenceUrl, submissionNotes: parsed.data.submissionNotes, submittedAt: now, createdAt: now, updatedAt: now });
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "assessment.submitted", entityType: "assessment", entityId: component.id, detail: `Submitted evidence for ${component.title}`, createdAt: now });
+  });
+  revalidatePath("/app/learning");
+}
+
+export async function gradeAssessmentAction(formData: FormData) {
+  const user = await requireRole(["super_admin", "academy_ops", "assessor"]);
+  const parsed = z.object({
+    cohortId: z.string().uuid(), enrollmentId: z.string().uuid(), componentId: z.string().uuid(), score: z.coerce.number().min(0).max(100),
+    outcome: z.enum(["pass", "resubmit", "fail"]), feedback: z.string().min(5).max(4000),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    const enrollment = database.enrollments.find((item) => item.id === parsed.data.enrollmentId && item.cohortId === parsed.data.cohortId);
+    const component = database.assessmentComponents.find((item) => item.id === parsed.data.componentId);
+    const cohort = database.cohorts.find((item) => item.id === enrollment?.cohortId);
+    if (!enrollment || !cohort || !component || component.programCode !== cohort.code.split("-")[0]) return;
+    const now = new Date().toISOString();
+    let submission = database.assessmentSubmissions.find((item) => item.enrollmentId === enrollment.id && item.componentId === component.id);
+    if (!submission) {
+      submission = { id: randomUUID(), enrollmentId: enrollment.id, componentId: component.id, status: "under_review", evidenceUrl: "", submissionNotes: "Recorded by assessor", submittedAt: now, createdAt: now, updatedAt: now };
+      database.assessmentSubmissions.push(submission);
+    }
+    submission.status = parsed.data.outcome === "pass" && parsed.data.score >= component.passThreshold ? "accepted" : "revision_requested";
+    submission.updatedAt = now;
+    const result = database.assessmentResults.find((item) => item.submissionId === submission.id);
+    if (result) Object.assign(result, { score: parsed.data.score, outcome: parsed.data.outcome, feedback: parsed.data.feedback, gradedBy: user.id, gradedAt: now });
+    else database.assessmentResults.push({ id: randomUUID(), submissionId: submission.id, score: parsed.data.score, outcome: parsed.data.outcome, feedback: parsed.data.feedback, gradedBy: user.id, gradedAt: now });
+    const application = database.applications.find((item) => item.id === enrollment.applicationId);
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "assessment.graded", entityType: "assessment", entityId: submission.id, detail: `Graded ${component.title} for ${application?.fullName ?? "learner"}: ${parsed.data.score}%`, createdAt: now });
+  });
+  revalidatePath(`/app/cohorts/${parsed.data.cohortId}/assessment`);
+  revalidatePath(`/app/cohorts/${parsed.data.cohortId}/assessment/${parsed.data.enrollmentId}`);
+}
+
+export async function issueCredentialAction(formData: FormData) {
+  const user = await requireRole(["super_admin", "academy_ops"]);
+  const parsed = z.object({ cohortId: z.string().uuid(), enrollmentId: z.string().uuid() }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return;
+  await updateDatabase((database) => {
+    if (database.credentials.some((item) => item.enrollmentId === parsed.data.enrollmentId)) return;
+    const enrollment = database.enrollments.find((item) => item.id === parsed.data.enrollmentId && item.cohortId === parsed.data.cohortId);
+    if (!enrollment) return;
+    const summary = getAssessmentSummary(database, enrollment.id);
+    if (!summary.certificationReady) return;
+    const issuedAt = new Date();
+    const expiresAt = new Date(issuedAt);
+    expiresAt.setUTCFullYear(expiresAt.getUTCFullYear() + 2);
+    const credentialNumber = `LYM-CAIO-${issuedAt.getUTCFullYear()}-${randomUUID().slice(0, 8).toUpperCase()}`;
+    database.credentials.push({
+      id: randomUUID(), enrollmentId: enrollment.id, credentialNumber, status: "issued", overallScore: summary.overallScore,
+      classification: summary.classification, issuedAt: issuedAt.toISOString(), expiresAt: expiresAt.toISOString(),
+      verificationCode: randomUUID().replaceAll("-", "").slice(0, 24), issuedBy: user.id, createdAt: issuedAt.toISOString(),
+    });
+    enrollment.status = "completed";
+    enrollment.progress = 100;
+    const application = database.applications.find((item) => item.id === enrollment.applicationId);
+    database.activities.unshift({ id: randomUUID(), actorId: user.id, action: "credential.issued", entityType: "credential", entityId: enrollment.id, detail: `Issued ${credentialNumber} to ${application?.fullName ?? "learner"}`, createdAt: issuedAt.toISOString() });
+  });
+  revalidatePath(`/app/cohorts/${parsed.data.cohortId}/assessment`);
+  revalidatePath(`/app/cohorts/${parsed.data.cohortId}/assessment/${parsed.data.enrollmentId}`);
+  revalidatePath("/app/learning");
 }

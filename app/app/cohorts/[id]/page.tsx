@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, Clock3, Plus, UserRoundCheck, UsersRound } from "lucide-react";
 import { enrolApplicationAction, updateCohortStatusAction } from "@/lib/os/actions";
 import { StatusBadge } from "@/components/os/StatusBadge";
+import { CohortTabs } from "@/components/os/CohortTabs";
 import { requireRole } from "@/lib/os/auth";
 import { readDatabase } from "@/lib/os/store";
 import { formatDate, initials } from "@/lib/os/utils";
@@ -22,6 +23,7 @@ export default async function CohortWorkspacePage({ params }: { params: Promise<
     <div className="os-page os-cohort-workspace">
       <Link href="/app/cohorts" className="os-back-link"><ArrowLeft size={15} /> Cohorts</Link>
       <div className="os-record-head os-cohort-head"><div><div className="os-record-title"><h1>{cohort.name}</h1><StatusBadge status={cohort.status} /></div><p>{cohort.program} · {cohort.code}</p></div>{canManage && <form action={updateCohortStatusAction}><input type="hidden" name="cohortId" value={cohort.id} /><select name="status" defaultValue={cohort.status}>{["draft", "enrolling", "active", "completed"].map((status) => <option key={status} value={status}>{status[0].toUpperCase() + status.slice(1)}</option>)}</select><button type="submit" className="os-button os-button-secondary">Update status</button></form>}</div>
+      <CohortTabs cohortId={cohort.id} active="overview" />
 
       <div className="os-cohort-facts"><div><CalendarDays size={18} /><span>Programme dates<strong>{formatDate(cohort.startDate)} - {formatDate(cohort.endDate)}</strong></span></div><div><Clock3 size={18} /><span>Delivery schedule<strong>{cohort.schedule}</strong></span></div><div><UsersRound size={18} /><span>Capacity<strong>{enrollments.length} enrolled · {cohort.capacity - enrollments.length} available</strong></span></div></div>
 
