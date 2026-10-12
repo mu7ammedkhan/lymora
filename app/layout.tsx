@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter, Lora } from "next/font/google";
 import "./globals.css";
 import "./os.css";
@@ -7,6 +8,8 @@ import { organizationSchema, websiteSchema } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 import { MotionProvider } from "@/components/MotionProvider";
 import { SiteFrame } from "@/components/SiteFrame";
+
+const GA_ID = "G-THLL6VB225";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -40,6 +43,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <JsonLd data={[organizationSchema(), websiteSchema()]} />
         <MotionProvider />
         <SiteFrame>{children}</SiteFrame>
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_ID}');`}
+        </Script>
       </body>
     </html>
   );
