@@ -56,21 +56,25 @@ export default function HomePage() {
   return (
     <>
       <section className="home-hero">
-        <HeroAI />
-        <div className="container home-hero-copy">
-          <span className="pill" data-reveal="fade"><LymoraMark size={16} />AI Workforce Company · Dubai, UAE</span>
-          <SplitText as="h1" text="The workforce for an *AI‑shaped world.*" />
-          <p data-reveal="up" style={{ "--d": "300ms" } as React.CSSProperties}>Trained people, governed workflows and managed AI capacity for ambitious UAE teams.</p>
-          <div className="hero-actions" data-reveal="up" style={{ "--d": "420ms" } as React.CSSProperties}>
-            <Button href="/for-businesses">Build AI capability</Button>
-            <Button href="/about" variant="ghost" icon="→">Discover Lymora</Button>
-          </div>
-        </div>
-        <div className="home-film" data-scroll="view">
-          <div className="home-film-frame">
+        <div className="hero-stage" data-scroll="exit">
+          <div className="hero-stage-media">
             <HeroVideo src={film.video} mobileSrc={film.mobile} poster={film.poster} />
-            <span className="home-film-caption"><LymoraMark size={18} />Human judgement. Intelligent execution.</span>
           </div>
+          <span className="hero-stage-tint" />
+          <span className="hero-stage-grid" />
+          <div className="container hero-stage-inner">
+            <div className="hero-stage-copy">
+              <span className="pill" data-reveal="fade"><LymoraMark size={16} />AI Workforce Company · Dubai, UAE</span>
+              <SplitText as="h1" text="The workforce for an *AI‑shaped world.*" />
+              <p data-reveal="up" style={{ "--d": "300ms" } as React.CSSProperties}>Trained people, governed workflows and managed AI capacity for ambitious UAE teams.</p>
+              <div className="hero-actions" data-reveal="up" style={{ "--d": "420ms" } as React.CSSProperties}>
+                <Button href="/for-businesses" variant="light">Build AI capability</Button>
+                <Button href="/about" variant="ghost" icon="→">Discover Lymora</Button>
+              </div>
+            </div>
+            <HeroAI />
+          </div>
+          <a className="hero-scroll" href="#thesis" aria-label="Scroll to the Lymora point of view"><span /></a>
         </div>
       </section>
 
@@ -118,27 +122,43 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="home-stats">
+      <section className="home-standard">
         <div className="container">
-          <div className="home-head home-head-split">
-            <div>
+          <div className="standard-panel">
+            <div className="standard-copy">
               <span className="eyebrow" data-reveal="fade">The CAIO™ standard</span>
               <SplitText text="A standard built to *mean something.*" />
+              <p data-reveal="up">CAIO™ certifies applied capability: assessed workplace evidence, verified outputs and responsible automation. Not attendance.</p>
+              <div data-reveal="up"><Button href="/caio" variant="light">About CAIO™ certification</Button></div>
             </div>
-            <Link className="text-link" href="/caio" data-reveal="fade">About CAIO™ certification <span>→</span></Link>
-          </div>
-          <div className="stat-row">
-            {[
-              { value: 36, suffix: "h", label: "of applied learning, built around real workplace tasks" },
-              { value: 75, suffix: "%", label: "minimum standard to certify. No attendance badges." },
-              { value: 2, suffix: " yrs", label: "credential validity, renewed through development" },
-              { value: operatorRoles.length, suffix: "", label: "AI operator roles ready to configure for your team" },
-            ].map((stat, index) => (
-              <div className="stat-cell" key={stat.label} data-reveal="up" style={{ "--i": index } as React.CSSProperties}>
-                <strong><span data-count={stat.value}>{stat.value}</span>{stat.suffix}</strong>
-                <p>{stat.label}</p>
-              </div>
-            ))}
+            <div className="standard-grid">
+              <article className="standard-tile" data-reveal="up" style={{ "--i": 0 } as React.CSSProperties}>
+                <span className="standard-label">Applied learning</span>
+                <strong><span data-count="36">36</span>h</strong>
+                <div className="standard-weeks">{["W1", "W2", "W3", "W4", "W5"].map((week, index) => <i key={week} style={{ "--w": index } as React.CSSProperties}><b>{week}</b></i>)}</div>
+                <p>Five live weeks built around real workplace tasks.</p>
+              </article>
+              <article className="standard-tile" data-reveal="up" style={{ "--i": 1 } as React.CSSProperties}>
+                <span className="standard-label">Pass standard</span>
+                <div className="standard-ring">
+                  <svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="34" /><circle className="ring-fill" cx="40" cy="40" r="34" /></svg>
+                  <strong><span data-count="75">75</span>%</strong>
+                </div>
+                <p>Minimum assessed score to certify. No attendance badges.</p>
+              </article>
+              <article className="standard-tile" data-reveal="up" style={{ "--i": 2 } as React.CSSProperties}>
+                <span className="standard-label">Credential validity</span>
+                <strong><span data-count="2">2</span> years</strong>
+                <div className="standard-timeline"><i /><i /><span>Renew</span></div>
+                <p>Kept current through continuous development.</p>
+              </article>
+              <article className="standard-tile" data-reveal="up" style={{ "--i": 3 } as React.CSSProperties}>
+                <span className="standard-label">Operator roles</span>
+                <strong><span data-count={operatorRoles.length}>{operatorRoles.length}</span> roles</strong>
+                <div className="standard-roles">{operatorRoles.map((role, index) => <i key={role.slug} style={{ "--r": index } as React.CSSProperties}>{role.name.replace(/^AI /, "").replace(/ Operator$/, "").replace("Customer Experience", "Customer exp.").replace("Executive Assistant", "Exec assistant")}</i>)}</div>
+                <p>Ready to configure for your team’s workflows.</p>
+              </article>
+            </div>
           </div>
         </div>
       </section>

@@ -100,6 +100,26 @@ export function MotionProvider() {
       });
     }
 
+    /* Stacking cards: each card eases back as the next one slides over it. */
+    const stack = Array.from(document.querySelectorAll<HTMLElement>(".stack-card"));
+    if (stack.length > 1 && !reduce) {
+      let frame = 0;
+      const update = () => {
+        frame = 0;
+        stack.forEach((card, index) => {
+          const next = stack[index + 1];
+          if (!next) return;
+          const rect = card.getBoundingClientRect();
+          const cover = 1 - (next.getBoundingClientRect().top - rect.top) / rect.height;
+          card.style.setProperty("--cover", Math.min(1, Math.max(0, cover)).toFixed(3));
+        });
+      };
+      const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
+      update();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      cleanups.push(() => { window.removeEventListener("scroll", onScroll); cancelAnimationFrame(frame); });
+    }
+
     /* Pointer effects: spotlight glow, magnetic buttons and tilt. */
     if (fine && !reduce) {
       let magnet: HTMLElement | null = null;
