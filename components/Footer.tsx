@@ -2,11 +2,11 @@ import Link from "next/link";
 import { aiSolutions, industries, siteConfig } from "@/lib/site";
 import { LymoraMark, Wordmark } from "@/components/Logo";
 
-/* Shooting stars that stream through the giant wordmark: [start x, delay s, duration s, length] */
+/* Small shooting stars that fall around the giant wordmark: [start x, delay s, duration s, tail length] */
 const meteors = [
-  [180, 0, 3.2, 150], [420, 1.1, 2.7, 120], [640, 2, 3.4, 170], [860, 0.5, 2.9, 130],
-  [1060, 1.7, 2.5, 110], [300, 2.7, 3.6, 160], [760, 3.2, 2.8, 140], [980, 3.9, 3.1, 150],
-  [520, 4.6, 2.6, 120], [1180, 5.2, 3, 140],
+  [140, 0, 3.2, 46], [320, 1.4, 2.6, 34], [520, 2.6, 3.4, 52], [700, 0.7, 2.9, 40],
+  [880, 1.9, 2.5, 30], [1060, 3.1, 3.1, 48], [1240, 0.3, 2.8, 38], [420, 3.8, 3, 44],
+  [960, 4.4, 2.7, 36], [620, 5.1, 3.3, 50], [1160, 5.8, 2.6, 32], [240, 6.3, 3.1, 42],
 ] as const;
 
 export function Footer() {
@@ -44,30 +44,31 @@ export function Footer() {
         <div><h3>Lymora</h3><Link href="/about">About</Link><Link href="/methodologies">Methodologies</Link><Link href="/insights">Insights</Link><Link href="/contact">Contact</Link><a href={siteConfig.social.linkedin} target="_blank" rel="noreferrer">LinkedIn</a><a href={siteConfig.social.instagram} target="_blank" rel="noreferrer">Instagram</a></div>
       </div>
       <div className="footer-giant" aria-hidden="true">
-        <svg viewBox="0 0 1200 330" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 1200 430" preserveAspectRatio="xMidYMid meet">
           <defs>
-            <clipPath id="footer-word">
-              <text x="600" y="238" textAnchor="middle" textLength="1140" lengthAdjust="spacingAndGlyphs" className="footer-giant-text">lymora</text>
-            </clipPath>
+            <text id="footer-word" x="600" y="338" textAnchor="middle" textLength="1140" lengthAdjust="spacingAndGlyphs" className="footer-giant-text">lymora</text>
+            <mask id="footer-sky" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="430">
+              <rect width="1200" height="430" fill="#fff" />
+              <use href="#footer-word" fill="#000" stroke="#000" strokeWidth="14" strokeLinejoin="round" />
+            </mask>
             <linearGradient id="footer-word-fill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stopColor="#fff" stopOpacity=".16" />
               <stop offset="1" stopColor="#fff" stopOpacity=".03" />
             </linearGradient>
-            <linearGradient id="meteor-tail" x1="-170" y1="0" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+            <linearGradient id="meteor-tail" x1="-56" y1="0" x2="0" y2="0" gradientUnits="userSpaceOnUse">
               <stop offset="0" stopColor="#9DB8E0" stopOpacity="0" />
-              <stop offset="1" stopColor="#fff" stopOpacity=".95" />
+              <stop offset="1" stopColor="#fff" stopOpacity=".85" />
             </linearGradient>
           </defs>
-          <g clipPath="url(#footer-word)">
-            <rect width="1200" height="330" fill="url(#footer-word-fill)" />
+          <g mask="url(#footer-sky)">
             {meteors.map(([x, delay, duration, length], index) => (
               <g className="meteor" key={index} style={{ "--x": `${x}px`, "--delay": `${delay}s`, "--duration": `${duration}s` } as React.CSSProperties}>
-                <line x1={-length} y1="0" x2="0" y2="0" stroke="url(#meteor-tail)" strokeWidth="4" strokeLinecap="round" />
-                <circle r="4.5" fill="#fff" />
-                <circle r="11" fill="#fff" opacity=".18" />
+                <line x1={-length} y1="0" x2="0" y2="0" stroke="url(#meteor-tail)" strokeWidth="1.3" strokeLinecap="round" />
+                <circle r="1.6" fill="#fff" />
               </g>
             ))}
           </g>
+          <use href="#footer-word" fill="url(#footer-word-fill)" />
         </svg>
       </div>
       <div className="container footer-bottom"><span>© {new Date().getFullYear()} {siteConfig.legalName}</span><span><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></span></div>
