@@ -158,53 +158,6 @@
   .whatsapp-panel,.whatsapp-launcher { transition:none; }
 }
 
-/* CAIO selective-admission landing page */
-.caio-announcement {
-  min-height:44px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:15px;
-  padding:8px 20px;
-  color:#fff;
-  background:var(--indigo);
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:.03em;
-  text-align:center;
-}
-.caio-announcement span { color:var(--violet-soft); }
-.caio-hero {
-  position:relative;
-  min-height:100svh;
-  display:flex;
-  align-items:center;
-  padding:40px 0 44px;
-  overflow:hidden;
-  color:#fff;
-  isolation:isolate;
-  background:var(--ink);
-}
-.caio-hero-inner { position:relative; }
-.caio-hero .breadcrumbs { margin-bottom:42px; color:rgba(255,255,255,.43); }
-.caio-brand-label { margin:0 0 24px; color:var(--violet-soft); font-size:15px; font-weight:700; }
-.caio-hero h1 {
-  max-width:820px;
-  margin:0;
-  font-family:var(--font-display);
-  font-size:clamp(68px,6.8vw,102px);
-  line-height:.94;
-  font-weight:500; letter-spacing:-.04em;
-}
-.caio-hero h1 em { color:var(--violet-soft); font-style:italic; font-weight:400; }
-.caio-hero-lead { max-width:620px; margin:30px 0 0; color:rgba(255,255,255,.72); font-size:18px; line-height:1.65; }
-.caio-hero .button { --btn-bg:var(--paper); --btn-fg:var(--ink); --btn-fill:var(--violet); --btn-fill-fg:#fff; --btn-chip:rgba(8,8,13,.07); box-shadow:none; }
-.caio-hero .bare-link { color:#fff; }
-.caio-trust-line { display:flex; flex-wrap:wrap; gap:0; margin-top:42px; color:rgba(255,255,255,.68); }
-.caio-trust-line span { padding:0 18px; border-left:1px solid rgba(255,255,255,.24); font-size:12px; }
-.caio-trust-line span:first-child { padding-left:0; border-left:0; }
-.caio-eligibility-note { margin:24px 0 0; color:rgba(255,255,255,.45); font-size:11px; }
-
 .caio-section-head { display:grid; grid-template-columns:1.15fr .65fr; gap:100px; align-items:end; margin-bottom:72px; }
 .caio-section-head h2,
 .caio-shift h2,
@@ -425,8 +378,6 @@
 }
 
 @media (max-width:820px) {
-  .caio-hero { min-height:calc(100svh - 118px); background-position:62% center; }
-  .caio-hero h1 { font-size:70px; }
   .caio-section-head,.caio-shift-grid,.caio-programme-grid,.caio-outputs-grid,.caio-application-grid,.caio-faq-grid { grid-template-columns:1fr; gap:55px; }
   .caio-programme-intro,.caio-application-grid > div:first-child,.caio-faq-grid > div:first-child { position:static; }
   .caio-week-list article { grid-template-columns:75px 1fr; padding:25px 0; }
@@ -440,15 +391,6 @@
 }
 
 @media (max-width:620px) {
-  .caio-announcement { min-height:48px; gap:7px; padding-inline:12px; font-size:9px; }
-  .caio-hero { min-height:calc(100svh - 118px); padding:58px 0 72px; background-position:68% center; }
-  .caio-hero .breadcrumbs { margin-bottom:32px; }
-  .caio-brand-label { margin-bottom:18px; font-size:13px; }
-  .caio-hero h1 { font-size:50px; }
-  .caio-hero-lead { margin-top:24px; font-size:15px; }
-  .caio-trust-line { gap:11px 0; margin-top:32px; }
-  .caio-trust-line span { padding-inline:10px; font-size:9px; }
-  .caio-trust-line span:nth-child(3) { border-left:0; padding-left:0; }
   .caio-shift,.caio-transformation,.caio-competencies,.caio-programme,.caio-frameworks,.caio-outputs,.caio-standard,.caio-fit,.caio-offer,.caio-admission,.caio-application,.caio-faq { padding:92px 0; }
   .caio-section-head { margin-bottom:48px; }
   .caio-section-head h2,.caio-shift h2,.caio-programme h2,.caio-outputs h2,.caio-fit h2,.caio-offer h2,.caio-application h2,.caio-faq h2 { font-size:46px; }
@@ -486,41 +428,15 @@
   .caio-sticky-apply > span { display:none; }
   .caio-sticky-apply > a { width:100%; justify-content:space-between; }
 }
-
-/* Design-system refinements */
-.caio-announcement {
-  position:absolute;
-  top:calc(var(--header-h) + 14px);
-  left:50%;
-  z-index:5;
-  translate:-50% 0;
-  min-height:36px;
-  padding:8px 18px;
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:999px;
-  background:rgba(122,92,255,.82);
-  backdrop-filter:blur(12px);
-  font-family:var(--font-mono);
-  font-size:11px;
-  font-weight:500;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  white-space:nowrap;
-}
-.site-main > .caio-hero { align-items:flex-end; padding:calc(var(--header-h) + 120px) 0 clamp(64px, 8vw, 110px); }
-.caio-hero h1 { max-width:12ch; font-size:clamp(56px, 7.8vw, 128px); line-height:.9; letter-spacing:-.055em; }
-.caio-hero h1 em { color:var(--ember-soft); }
-.caio-brand-label { font-family:var(--font-mono); font-size:12px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(--on-dark-body); }
-.caio-trust-line span { font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; }
-.caio-standard .button { --btn-fill:var(--ember); --btn-fill-fg:var(--ink); }
-.caio-standard { background:linear-gradient(135deg, #5B3FE6 0%, var(--violet) 55%, #8E72FF 100%); }
+.caio-standard .button { --btn-fill:var(--ink); --btn-fill-fg:#fff; }
+.caio-standard { background:var(--accent); }
 .caio-competency-grid article, .caio-admission-steps article { transition:background .5s; }
 .caio-competency-grid article:hover { background:rgba(244,242,238,.05); }
 .caio-admission-steps article:hover { background:var(--surface); }
 .caio-week-list article { transition:padding .6s var(--ease); }
 .caio-week-list article:hover { padding-left:14px; }
 .caio-application-form { border-radius:var(--radius); background:var(--surface); box-shadow:var(--shadow); }
-.caio-form-success { border-radius:var(--radius); background:linear-gradient(135deg, #5B3FE6, var(--violet)); }
+.caio-form-success { border-radius:var(--radius); background:var(--accent); }
 .caio-sticky-apply { border-radius:999px; }
 .caio-sticky-apply > a { border-radius:999px; }
 .whatsapp-launcher { box-shadow:0 18px 40px -12px rgba(32,185,88,.6); }
@@ -530,8 +446,5 @@
 .whatsapp-send { border-radius:999px; }
 
 @media (max-width:620px) {
-  .caio-announcement { width:calc(100% - 32px); white-space:normal; font-size:9px; text-align:center; }
-  .site-main > .caio-hero { padding-top:calc(var(--header-h) + 110px); }
-  .caio-hero h1 { font-size:clamp(46px, 13vw, 64px); }
 }
 html.nav-locked .whatsapp-support, html.nav-locked .caio-sticky-apply { opacity:0; visibility:hidden; }

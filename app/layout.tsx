@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Funnel_Display, Geist, Geist_Mono, Instrument_Serif, Inter, Lora } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import "./caio.css";
 import "./os.css";
@@ -12,46 +12,11 @@ import { SiteFrame } from "@/components/SiteFrame";
 
 const GA_ID = "G-THLL6VB225";
 
-// Public site type system
-const display = Funnel_Display({
+// One typeface across the whole site, Lymora OS included
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-funnel",
+  variable: "--font-jakarta",
   display: "swap",
-});
-
-const sans = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist",
-  display: "swap",
-});
-
-const mono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
-  display: "swap",
-});
-
-const serif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  style: ["italic"],
-  variable: "--font-instrument",
-  display: "swap",
-});
-
-// Lymora OS (/app) keeps its own type; not preloaded on the public site
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-  preload: false,
-});
-
-const lora = Lora({
-  subsets: ["latin"],
-  variable: "--font-lora",
-  display: "swap",
-  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -67,13 +32,13 @@ export const metadata: Metadata = {
   icons: { icon: "/icon.svg", apple: "/apple-icon.png" }
 };
 
-export const viewport: Viewport = { themeColor: "#08080D" };
+export const viewport: Viewport = { themeColor: "#FFFFFF" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={`${display.variable} ${sans.variable} ${mono.variable} ${serif.variable} ${inter.variable} ${lora.variable}`} suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" className={jakarta.variable} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.setAttribute('data-js','')" }} />
       </head>
       <body>
         <JsonLd data={[organizationSchema(), websiteSchema()]} />

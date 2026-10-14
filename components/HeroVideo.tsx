@@ -21,7 +21,7 @@ export function HeroVideo({ src, mobileSrc, poster, className = "" }: HeroVideoP
     const play = () => { if (!reduce.matches) video.play().catch(() => {}); };
     const observer = new IntersectionObserver(([entry]) => (entry.isIntersecting ? play() : video.pause()), { threshold: 0.01 });
     observer.observe(video);
-    const onReady = () => video.classList.add("is-playing");
+    const onReady = () => video.setAttribute("data-playing", "");
     video.addEventListener("playing", onReady);
     return () => {
       observer.disconnect();

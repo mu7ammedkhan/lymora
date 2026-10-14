@@ -20,13 +20,16 @@ const STAGGER_GROUPS = [
 
 const SPOTLIGHT = ".card, .solution-card, .mini-card, .article-card, .spot";
 
+/* State lives in data attributes, never in className: React resets className
+   whenever a client component re-renders, which would hide revealed content. */
+
 export function MotionProvider() {
   const pathname = usePathname();
 
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.route = pathname.split("/")[1] || "home";
-    root.classList.add("js");
+    root.setAttribute("data-js", "");
     if (pathname === "/login" || pathname.startsWith("/app")) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -51,14 +54,14 @@ export function MotionProvider() {
         });
       });
     });
-    document.querySelectorAll<HTMLElement>(SPOTLIGHT).forEach(el => el.classList.add("has-spotlight"));
+    document.querySelectorAll<HTMLElement>(SPOTLIGHT).forEach(el => el.setAttribute("data-spot", ""));
 
     /* Reveal on scroll */
-    const revealTargets = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]:not(.is-in)"));
+    const revealTargets = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]:not([data-shown])"));
     const revealObserver = new IntersectionObserver(
       entries => entries.forEach(entry => {
         if (!entry.isIntersecting) return;
-        entry.target.classList.add("is-in");
+        entry.target.setAttribute("data-shown", "");
         revealObserver.unobserve(entry.target);
         const counters = entry.target.matches("[data-count]") ? [entry.target as HTMLElement] : Array.from(entry.target.querySelectorAll<HTMLElement>("[data-count]"));
         counters.forEach(counter => animateCount(counter, reduce));
@@ -66,7 +69,7 @@ export function MotionProvider() {
       { rootMargin: "0px 0px -8% 0px", threshold: 0.12 }
     );
     revealTargets.forEach(el => revealObserver.observe(el));
-    root.classList.add("motion-ready");
+    root.setAttribute("data-motion", "ready");
     cleanups.push(() => revealObserver.disconnect());
 
     /* Scroll-linked progress: --p runs 0 → 1 while an element crosses the viewport. */
@@ -106,7 +109,7 @@ export function MotionProvider() {
         const target = event.target as Element | null;
         if (!target?.closest) return;
 
-        const lit = target.closest<HTMLElement>(".has-spotlight, .button, .chip-link");
+        const lit = target.closest<HTMLElement>("[data-spot], .button");
         if (lit) {
           const rect = lit.getBoundingClientRect();
           lit.style.setProperty("--mx", `${event.clientX - rect.left}px`);

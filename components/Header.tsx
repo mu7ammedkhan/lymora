@@ -33,7 +33,7 @@ export function Header() {
   useEffect(() => { setOpen(false); }, [pathname]);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("nav-locked", open);
+    document.documentElement.toggleAttribute("data-nav-open", open);
     if (!open) return;
     const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
     window.addEventListener("keydown", onKey);
@@ -43,7 +43,7 @@ export function Header() {
   return (
     <header className={`site-header ${scrolled ? "is-scrolled" : ""} ${hidden && !open ? "is-hidden" : ""} ${open ? "is-open" : ""}`}>
       <div className="container header-inner">
-        <Wordmark inverse />
+        <Wordmark />
         <nav className="main-nav" aria-label="Main navigation">
           {mainNav.map((item) => {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -54,7 +54,7 @@ export function Header() {
             );
           })}
         </nav>
-        <Link href="/contact" className="button button-light button-small header-cta">
+        <Link href="/contact" className="button button-primary button-small header-cta">
           <span className="button-roll"><span data-text="Talk to Lymora">Talk to Lymora</span></span>
           <span className="button-icon" aria-hidden="true"><i>↗</i><i>↗</i></span>
         </Link>

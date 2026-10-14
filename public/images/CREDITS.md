@@ -6,8 +6,8 @@ Photographs are from Unsplash (Unsplash License). Films are from Pexels (Pexels 
 
 | File | Author | Source |
 |---|---|---|
-| media/hero-home.mp4 (mirrored, colour-graded) | Ron Lach | https://www.pexels.com/video/man-and-woman-looking-at-the-monitor-8103052/ |
-| media/academy.mp4 | Yaroslav Shuraev | https://www.pexels.com/video/people-working-together-7668492/ |
+| media/hero-home.mp4 | Yaroslav Shuraev | https://www.pexels.com/video/people-discussing-around-a-table-7668952/ |
+| media/academy.mp4 | Kampus Production | https://www.pexels.com/video/teacher-evaluating-students-5940323/ |
 | media/workforce.mp4 | MART PRODUCTION | https://www.pexels.com/video/people-working-in-a-office-7706629/ |
 | media/city.mp4 (cropped) | Adeel Rana | https://www.pexels.com/video/burj-khalifa-illuminated-at-night-34753592/ |
 
