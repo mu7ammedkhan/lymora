@@ -44,22 +44,27 @@ export function Footer() {
         <div><h3>Lymora</h3><Link href="/about">About</Link><Link href="/methodologies">Methodologies</Link><Link href="/insights">Insights</Link><Link href="/contact">Contact</Link><a href={siteConfig.social.linkedin} target="_blank" rel="noreferrer">LinkedIn</a><a href={siteConfig.social.instagram} target="_blank" rel="noreferrer">Instagram</a></div>
       </div>
       <div className="footer-giant" aria-hidden="true">
-        <svg viewBox="0 0 1200 430" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 1200 320" preserveAspectRatio="xMidYMid meet">
           <defs>
-            <text id="footer-word" x="600" y="338" textAnchor="middle" textLength="1140" lengthAdjust="spacingAndGlyphs" className="footer-giant-text">lymora</text>
-            <mask id="footer-sky" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="430">
-              <rect width="1200" height="430" fill="#fff" />
-              <use href="#footer-word" fill="#000" stroke="#000" strokeWidth="14" strokeLinejoin="round" />
+            <text id="footer-word" x="600" y="226" textAnchor="middle" textLength="620" lengthAdjust="spacingAndGlyphs" className="footer-giant-text">lymora</text>
+            <mask id="footer-sky" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="320">
+              <rect width="1200" height="320" fill="#fff" />
+              <use href="#footer-word" fill="#000" stroke="#000" strokeWidth="10" strokeLinejoin="round" />
             </mask>
             <linearGradient id="footer-word-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#fff" stopOpacity=".16" />
-              <stop offset="1" stopColor="#fff" stopOpacity=".03" />
+              <stop offset="0" stopColor="#fff" stopOpacity=".34" />
+              <stop offset="1" stopColor="#fff" stopOpacity=".06" />
             </linearGradient>
+            <radialGradient id="footer-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stopColor="#2A5C9F" stopOpacity=".42" />
+              <stop offset="1" stopColor="#2A5C9F" stopOpacity="0" />
+            </radialGradient>
             <linearGradient id="meteor-tail" x1="-56" y1="0" x2="0" y2="0" gradientUnits="userSpaceOnUse">
               <stop offset="0" stopColor="#9DB8E0" stopOpacity="0" />
               <stop offset="1" stopColor="#fff" stopOpacity=".85" />
             </linearGradient>
           </defs>
+          <ellipse cx="600" cy="176" rx="430" ry="110" fill="url(#footer-glow)" />
           <g mask="url(#footer-sky)">
             {meteors.map(([x, delay, duration, length], index) => (
               <g className="meteor" key={index} style={{ "--x": `${x}px`, "--delay": `${delay}s`, "--duration": `${duration}s` } as React.CSSProperties}>
@@ -68,7 +73,7 @@ export function Footer() {
               </g>
             ))}
           </g>
-          <use href="#footer-word" fill="url(#footer-word-fill)" />
+          <use href="#footer-word" fill="url(#footer-word-fill)" stroke="rgba(255,255,255,.12)" strokeWidth="1" />
         </svg>
       </div>
       <div className="container footer-bottom"><span>© {new Date().getFullYear()} {siteConfig.legalName}</span><span><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></span></div>
