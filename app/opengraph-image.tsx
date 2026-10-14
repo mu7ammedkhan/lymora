@@ -4,13 +4,11 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt = "Lymora - Human Meets Intelligence";
 
-const mark = (stroke: string, width: number) => (
-  <>
-    <path d="M16.82 39.41A17 17 0 0 1 16.82 8.59" fill="none" stroke={stroke} strokeWidth={width} strokeLinecap="round" />
-    <path d="M31.18 8.59A17 17 0 0 1 31.18 39.41" fill="none" stroke={stroke} strokeWidth={width} strokeLinecap="round" strokeDasharray={width === 6 ? "0.01 9.63" : "0.01 2.41"} />
-    <path d="M24 1.8Q24.6 5.6 27.4 6.2Q24.6 6.8 24 10.6Q23.4 6.8 20.6 6.2Q23.4 5.6 24 1.8Z" fill={stroke} />
-  </>
-);
+const mark = (stroke: string, width: number) => [
+  <path key="h" d="M16.82 39.41A17 17 0 0 1 16.82 8.59" fill="none" stroke={stroke} strokeWidth={width} strokeLinecap="round" />,
+  <path key="i" d="M31.18 8.59A17 17 0 0 1 31.18 39.41" fill="none" stroke={stroke} strokeWidth={width} strokeLinecap="round" strokeDasharray={width === 6 ? "0.01 9.63" : "0.01 2.41"} />,
+  <path key="s" d="M24 1.8Q24.6 5.6 27.4 6.2Q24.6 6.8 24 10.6Q23.4 6.8 20.6 6.2Q23.4 5.6 24 1.8Z" fill={stroke} />,
+];
 
 export default function Image() {
   return new ImageResponse(
