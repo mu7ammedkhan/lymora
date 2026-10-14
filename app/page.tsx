@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button, CTA, Marquee, SplitText } from "@/components/UI";
+import { HeroAI } from "@/components/HeroAI";
 import { HeroVideo } from "@/components/HeroVideo";
 import { IndustryShowcase } from "@/components/IndustryShowcase";
 import { LymoraMark } from "@/components/Logo";
@@ -55,6 +56,7 @@ export default function HomePage() {
   return (
     <>
       <section className="home-hero">
+        <HeroAI />
         <div className="container home-hero-copy">
           <span className="pill" data-reveal="fade"><LymoraMark size={16} />AI Workforce Company · Dubai, UAE</span>
           <SplitText as="h1" text="The workforce for an *AI‑shaped world.*" />
@@ -65,7 +67,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="home-film" data-scroll="view">
-          <div className="home-film-frame" data-reveal="frame" style={{ "--d": "500ms" } as React.CSSProperties}>
+          <div className="home-film-frame">
             <HeroVideo src={film.video} mobileSrc={film.mobile} poster={film.poster} />
             <span className="home-film-caption"><LymoraMark size={18} />Human judgement. Intelligent execution.</span>
           </div>

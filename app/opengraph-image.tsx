@@ -13,7 +13,7 @@ const mark = (stroke: string, width: number) => [
 export default function Image() {
   return new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", background: "#4F46E5", color: "#FFFFFF", fontFamily: "sans-serif", overflow: "hidden" }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", background: "#13325B", color: "#FFFFFF", fontFamily: "sans-serif", overflow: "hidden" }}>
         <svg width="620" height="620" viewBox="0 0 48 48" style={{ position: "absolute", right: -40, top: 5, opacity: 0.22 }}>{mark("#FFFFFF", 2)}</svg>
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "72px 78px", width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 40, letterSpacing: -1.5 }}>

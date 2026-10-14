@@ -127,7 +127,7 @@
   line-height:1.5;
   outline:none;
 }
-.whatsapp-panel-body textarea:focus { border-color:var(--indigo); box-shadow:0 0 0 3px rgba(64,84,247,.1); }
+.whatsapp-panel-body textarea:focus { border-color:var(--indigo); box-shadow:0 0 0 3px var(--accent-soft); }
 .whatsapp-send {
   min-height:50px;
   display:grid;
