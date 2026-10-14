@@ -1,5 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-<rect width="100" height="100" rx="20" fill="#070A12"/>
-<path d="M45 10C23 15 12 30 12 50s11 35 33 40C33 77 29 64 29 50s4-27 16-40Z" fill="#8457FF"/>
-<path d="M55 10c22 5 33 20 33 40S77 85 55 90c12-13 16-26 16-40s-4-27-16-40Z" fill="#4054F7"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="h" x1="24" y1="50" x2="24" y2="14" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF6A3D"/><stop offset="1" stop-color="#FFB48F"/></linearGradient>
+    <linearGradient id="i" x1="40" y1="14" x2="40" y2="50" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5CC8FF"/><stop offset="1" stop-color="#7A5CFF"/></linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#08080D"/>
+  <g transform="translate(8 9)">
+    <path d="M16.82 39.41A17 17 0 0 1 16.82 8.59" fill="none" stroke="url(#h)" stroke-width="6" stroke-linecap="round" transform="translate(0 0)"/>
+    <path d="M31.18 8.59A17 17 0 0 1 31.18 39.41" fill="none" stroke="url(#i)" stroke-width="6" stroke-linecap="round" stroke-dasharray="0.01 9.63"/>
+    <path d="M24 1.8Q24.6 5.6 27.4 6.2Q24.6 6.8 24 10.6Q23.4 6.8 20.6 6.2Q23.4 5.6 24 1.8Z" fill="#fff"/>
+  </g>
 </svg>

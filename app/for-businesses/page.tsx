@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Breadcrumbs, CTA, SectionHeading } from "@/components/UI";
+import { CTA, SectionHeading, PageHero } from "@/components/UI";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -17,12 +17,7 @@ const startingPoints = [
 
 export default function BusinessPage() {
   return <>
-    <section className="page-hero"><div className="container">
-      <Breadcrumbs items={[{label:"Home",href:"/"},{label:"For Business"}]}/>
-      <span className="eyebrow">For organisations</span>
-      <h1>Your AI investment should show up in the work.</h1>
-      <p>Build the capability, workflows and operating capacity required to turn ambition into visible business performance.</p>
-    </div></section>
+    <PageHero media="workforce" crumbs={[{label:"Home",href:"/"},{label:"For Business"}]} eyebrow="For organisations" title="Your AI investment should *show up in the work.*" text="Build the capability, workflows and operating capacity required to turn ambition into visible business performance." />
     <section><div className="container">
       <SectionHeading eyebrow="Choose your starting point" title="One company. A connected path from assessment to deployment." text="Begin where the constraint is clearest, then connect the next capability as the organisation is ready."/>
       <div className="offer-grid">

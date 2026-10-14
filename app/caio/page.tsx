@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { CaioApplicationForm } from "@/components/CaioApplicationForm";
-import { Breadcrumbs, FAQ } from "@/components/UI";
+import { Breadcrumbs, Button, FAQ, SplitText } from "@/components/UI";
+import { HeroVideo } from "@/components/HeroVideo";
+import { heroMedia } from "@/lib/media";
 import { JsonLd } from "@/components/JsonLd";
 import { breadcrumbSchema, courseSchema, faqSchema, pageMetadata } from "@/lib/seo";
 
@@ -50,14 +52,18 @@ export default function CaioLandingPage() {
 
       <div className="caio-announcement">Founding Cohort Applications Open <span>•</span> 12 Seats <span>•</span> Selective Admission</div>
 
-      <section className="caio-hero">
-        <div className="container caio-hero-inner">
+      <section className="caio-hero" data-scroll="exit">
+        <div className="page-hero-media">
+          <HeroVideo src={heroMedia.academy.video} mobileSrc={heroMedia.academy.mobile} poster={heroMedia.academy.poster} />
+          <span className="page-hero-shade" />
+        </div>
+        <div className="container caio-hero-inner page-hero-inner">
           <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Academy", href: "/academy" }, { label: "CAIO™" }]} />
           <p className="caio-brand-label">Lymora Academy</p>
-          <h1>Become a Certified{" "}<br/><em>AI Operator.</em></h1>
+          <SplitText as="h1" text="Become a Certified *AI Operator.*" />
           <p className="caio-hero-lead">Become the professional who can turn AI into reliable, responsible and measurable business results.</p>
           <div className="hero-actions">
-            <Link href="#application" className="button" data-event="caio_apply_hero">Apply for Eligibility <span>↗</span></Link>
+            <Button href="#application">Apply for Eligibility</Button>
             <Link href="#programme" className="bare-link">View the Programme <span>↓</span></Link>
           </div>
           <div className="caio-trust-line"><span>5 weeks</span><span>36 hours</span><span>Live and applied</span><span>Professional assessment</span></div>

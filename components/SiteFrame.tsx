@@ -16,7 +16,7 @@ export function SiteFrame({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
-      <main>{children}</main>
+      <main className="site-main">{children}</main>
       <Footer />
       <WhatsAppSupport />
     </>
