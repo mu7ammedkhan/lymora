@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Breadcrumbs, CTA, FAQ, SectionHeading } from "@/components/UI";
+import { CTA, FAQ, SectionHeading, PageHero, Button } from "@/components/UI";
 import { JsonLd } from "@/components/JsonLd";
 import { operatorRoles } from "@/lib/site";
 import { breadcrumbSchema, faqSchema, pageMetadata, serviceSchema } from "@/lib/seo";
@@ -25,7 +25,7 @@ export default function AIWorkforcePage() {
       breadcrumbSchema([{ name: "Home", path: "/" }, { name: "AI Workforce", path }]),
       faqSchema(faqs)
     ]} />
-    <section className="page-hero"><div className="container"><Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "AI Workforce" }]}/><span className="eyebrow">Lymora Workforce</span><h1>The next hire should multiply the team around them.</h1><p>Deploy trained, certified and managed professionals who use AI to increase operating capacity without removing human accountability.</p><div className="hero-actions"><Link href="/contact" className="button">Design the first role</Link></div></div></section>
+    <PageHero media="workforce" crumbs={[{ label: "Home", href: "/" }, { label: "AI Workforce" }]} eyebrow="Lymora Workforce" title="The next hire should *multiply the team* around them." text="Deploy trained, certified and managed professionals who use AI to increase operating capacity without removing human accountability."><Button href="/contact">Design the first role</Button></PageHero>
 
     <section><div className="container"><SectionHeading eyebrow="AI Workforce as a Service" title="More than placement. More than software." text="Traditional recruitment finds a person. Software vendors provide a tool. Lymora combines role design, capable talent, responsible workflow standards and ongoing operational support."/><div className="cards-3">{[
       ["01", "Recruit", "Source suitable professionals and assess baseline capability, role fit and communication standards."],

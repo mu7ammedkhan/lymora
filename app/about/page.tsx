@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Breadcrumbs, CTA, SectionHeading } from "@/components/UI";
+import { CTA, SectionHeading, PageHero } from "@/components/UI";
 import { JsonLd } from "@/components/JsonLd";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
 
@@ -13,7 +13,7 @@ export const metadata = pageMetadata({
 export default function AboutPage() {
   return <>
     <JsonLd data={breadcrumbSchema([{name:"Home",path:"/"},{name:"About Lymora",path:"/about"}])}/>
-    <section className="page-hero"><div className="container"><Breadcrumbs items={[{label:"Home",href:"/"},{label:"About"}]}/><span className="eyebrow">About Lymora</span><h1>We are building the human operating layer for AI.</h1><p>The future of work will not be defined by AI alone, but by people who know how to direct it, verify it and turn it into progress.</p></div></section>
+    <PageHero media="city" crumbs={[{label:"Home",href:"/"},{label:"About"}]} eyebrow="About Lymora" title="We are building the *human operating layer* for AI." text="The future of work will not be defined by AI alone, but by people who know how to direct it, verify it and turn it into progress." />
     <section><div className="container split"><div><SectionHeading eyebrow="Our purpose" title="Build workforces that know how to use AI effectively, responsibly and measurably." text="Lymora sits at the intersection of recruitment, professional certification, workforce deployment, workflow redesign and enterprise enablement."/><p className="prose">Unlike a traditional recruitment firm, consultancy or training provider, Lymora combines talent, capability development and ongoing operational support in one integrated model.</p></div><div className="card"><span className="eyebrow">Company thesis</span><h3>Human Meets Intelligence</h3><p>Businesses do not need more AI tools. They need people and workflows that know how to use them.</p><p><strong>Primary market:</strong> UAE and GCC organisations seeking practical implementation and workforce capability.</p></div></div></section>
     <section className="dark-section"><div className="container"><SectionHeading eyebrow="Vision, mission and promise" title="A trusted operating standard for the AI-enabled workforce."/><div className="cards-3">{[
       ["Vision","To become the world’s most trusted AI Workforce Company."],

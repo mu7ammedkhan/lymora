@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Inter, Lora } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import "lenis/dist/lenis.css";
 import "./globals.css";
+import "./caio.css";
 import "./os.css";
 import { JsonLd } from "@/components/JsonLd";
 import { organizationSchema, websiteSchema } from "@/lib/seo";
@@ -11,15 +13,10 @@ import { SiteFrame } from "@/components/SiteFrame";
 
 const GA_ID = "G-THLL6VB225";
 
-const inter = Inter({
+// One typeface across the whole site, Lymora OS included
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const lora = Lora({
-  subsets: ["latin"],
-  variable: "--font-lora",
+  variable: "--font-jakarta",
   display: "swap",
 });
 
@@ -36,10 +33,15 @@ export const metadata: Metadata = {
   icons: { icon: "/icon.svg", apple: "/apple-icon.png" }
 };
 
+export const viewport: Viewport = { themeColor: "#FFFFFF" };
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth">
-      <body className={`${inter.variable} ${lora.variable}`}>
+    <html lang="en" data-scroll-behavior="smooth" className={jakarta.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.setAttribute('data-js','')" }} />
+      </head>
+      <body>
         <JsonLd data={[organizationSchema(), websiteSchema()]} />
         <MotionProvider />
         <SiteFrame>{children}</SiteFrame>

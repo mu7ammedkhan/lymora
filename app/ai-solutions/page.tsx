@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Breadcrumbs, CTA, SectionHeading } from "@/components/UI";
+import { CTA, SectionHeading, PageHero } from "@/components/UI";
 import { JsonLd } from "@/components/JsonLd";
 import { aiSolutions } from "@/lib/site";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
@@ -18,17 +18,13 @@ export default function AISolutionsPage() {
         breadcrumbSchema([{ name: "Home", path: "/" }, { name: "AI Solutions", path: "/ai-solutions" }]),
         { "@context": "https://schema.org", "@type": "ItemList", name: "Lymora AI Solutions", itemListElement: aiSolutions.map((solution,index)=>({ "@type":"ListItem", position:index+1, name:solution.name, url:`${process.env.NEXT_PUBLIC_SITE_URL || "https://lymoraops.com"}/ai-solutions/${solution.slug}` })) }
       ]}/>
-      <section className="page-hero">
-        <div className="container">
-          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "AI Solutions" }]} />
-          <span className="eyebrow">AI Solutions</span>
-          <h1>One clear next move for every AI ambition.</h1>
-          <p>
-            Move from search to action across AI strategy, workforce capability, workflow implementation,
-            responsible governance and managed deployment.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        media="workforce"
+        crumbs={[{ label: "Home", href: "/" }, { label: "AI Solutions" }]}
+        eyebrow="AI Solutions"
+        title="One clear next move for *every AI ambition.*"
+        text="Move from search to action across AI strategy, workforce capability, workflow implementation, responsible governance and managed deployment."
+      />
 
       <section>
         <div className="container">

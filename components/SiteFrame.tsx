@@ -1,8 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { Cursor } from "@/components/Cursor";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { SmoothScroll } from "@/components/SmoothScroll";
 import { WhatsAppSupport } from "@/components/WhatsAppSupport";
 
 export function SiteFrame({ children }: { children: React.ReactNode }) {
@@ -15,8 +17,10 @@ export function SiteFrame({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <SmoothScroll />
+      <Cursor />
       <Header />
-      <main>{children}</main>
+      <main className="site-main">{children}</main>
       <Footer />
       <WhatsAppSupport />
     </>

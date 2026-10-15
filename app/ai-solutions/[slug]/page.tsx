@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Breadcrumbs, CTA, FAQ, SectionHeading } from "@/components/UI";
+import { CTA, FAQ, SectionHeading, PageHero, Button } from "@/components/UI";
 import { JsonLd } from "@/components/JsonLd";
 import { aiSolutions } from "@/lib/site";
 import { breadcrumbSchema, faqSchema, pageMetadata, serviceSchema } from "@/lib/seo";
@@ -35,24 +35,20 @@ export default async function AISolutionPage({ params }: { params: Promise<{ slu
         breadcrumbSchema([{ name: "Home", path: "/" }, { name: "AI Solutions", path: "/ai-solutions" }, { name: solution.name, path }]),
         faqSchema(faqItems)
       ]} />
-      <section className="page-hero">
-        <div className="container">
-          <Breadcrumbs
-            items={[
-              { label: "Home", href: "/" },
-              { label: "AI Solutions", href: "/ai-solutions" },
-              { label: solution.name }
-            ]}
-          />
-          <span className="eyebrow">{solution.searchIntent}</span>
-          <h1>{solution.headline}</h1>
-          <p>{solution.summary}</p>
-          <div className="hero-actions">
-            <Link className="button" href="/contact">Discuss this solution</Link>
-            <Link className="text-link light" href="/academy">Explore training →</Link>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        media="enterprise"
+        crumbs={[
+          { label: "Home", href: "/" },
+          { label: "AI Solutions", href: "/ai-solutions" },
+          { label: solution.name }
+        ]}
+        eyebrow={solution.name}
+        title={solution.headline}
+        text={solution.summary}
+      >
+        <Button href="/contact">Discuss this solution</Button>
+        <Button href="/academy" variant="ghost" icon="→">Explore training</Button>
+      </PageHero>
 
       <section>
         <div className="container content-grid">

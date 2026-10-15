@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Breadcrumbs, CTA, SectionHeading } from "@/components/UI";
+import { CTA, SectionHeading, PageHero, Button } from "@/components/UI";
 import { JsonLd } from "@/components/JsonLd";
 import { breadcrumbSchema, pageMetadata, serviceSchema } from "@/lib/seo";
 
@@ -16,7 +16,7 @@ const services = [
 
 export default function EnterprisePage(){return <>
   <JsonLd data={[serviceSchema({name:"Lymora Enterprise AI Services",description:"Readiness, workflow redesign, governance, implementation and managed AI operations for UAE organisations.",path:"/enterprise",audience:"Leaders and organisations in the UAE",offers:services.map(item=>item[0])}),breadcrumbSchema([{name:"Home",path:"/"},{name:"Enterprise",path:"/enterprise"}])]}/>
-  <section className="page-hero"><div className="container"><Breadcrumbs items={[{label:"Home",href:"/"},{label:"Enterprise"}]}/><span className="eyebrow">Lymora Enterprise</span><h1>Make AI operational, governed and measurable.</h1><p>Move beyond scattered pilots with a clear operating model for capability, workflows, controls and continuous improvement.</p><div className="hero-actions"><Link className="button" href="/contact">Define the enterprise priority</Link></div></div></section>
+  <PageHero media="city" crumbs={[{label:"Home",href:"/"},{label:"Enterprise"}]} eyebrow="Lymora Enterprise" title="Make AI operational, *governed and measurable.*" text="Move beyond scattered pilots with a clear operating model for capability, workflows, controls and continuous improvement."><Button href="/contact">Define the enterprise priority</Button></PageHero>
   <section><div className="container"><SectionHeading eyebrow="Enterprise services" title="From readiness to implementation." text="Begin with evidence, then choose the intervention that matches your organisation’s capability, workflow maturity and risk."/><div className="solution-grid">{services.map(([name,text,href],index)=><Link href={href} className="solution-card" key={name}><span className="eyebrow">Service {String(index+1).padStart(2,"0")}</span><h3>{name}</h3><p>{text}</p><span className="text-link">Explore service →</span></Link>)}</div></div></section>
   <section className="dark-section"><div className="container"><SectionHeading eyebrow="Enterprise pathway" title="Diagnose. Prioritise. Enable. Implement. Deploy. Manage."/><div className="cards-3">{[
     ["01","Diagnose","Assess readiness, capability, workflows and risk."],
