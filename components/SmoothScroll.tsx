@@ -11,6 +11,7 @@ export function SmoothScroll() {
     const root = document.documentElement;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const lenis = reduce ? null : new Lenis({ autoRaf: true, lerp: 0.085, anchors: { offset: -96 }, allowNestedScroll: true });
+    (window as Window & { lenis?: Lenis | null }).lenis = lenis;
 
     // Pause smoothing while the mobile menu locks the page
     const lock = new MutationObserver(() => {
@@ -34,6 +35,7 @@ export function SmoothScroll() {
     return () => {
       lock.disconnect();
       lenis?.destroy();
+      (window as Window & { lenis?: Lenis | null }).lenis = null;
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       cancelAnimationFrame(frame);
