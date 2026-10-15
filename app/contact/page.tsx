@@ -1,4 +1,4 @@
-import { Breadcrumbs, SectionHeading } from "@/components/UI";
+import { SectionHeading, PageHero } from "@/components/UI";
 import { pageMetadata } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
@@ -10,12 +10,7 @@ export const metadata = pageMetadata({
 
 export default function ContactPage() {
   return <>
-    <section className="page-hero"><div className="container">
-      <Breadcrumbs items={[{label:"Home",href:"/"},{label:"Contact"}]}/>
-      <span className="eyebrow">Start a conversation</span>
-      <h1>Let’s find the move that creates momentum.</h1>
-      <p>Share the capability gap, team constraint or professional goal. We will help identify the clearest starting point.</p>
-    </div></section>
+    <PageHero media="city" crumbs={[{label:"Home",href:"/"},{label:"Contact"}]} eyebrow="Start a conversation" title="Let’s find the move that *creates momentum.*" text="Share the capability gap, team constraint or professional goal. We will help identify the clearest starting point." />
     <section><div className="container split contact-layout">
       <div><SectionHeading eyebrow="Contact Lymora" title="A focused first conversation." text="Tell us what is not moving. We will help determine whether the answer is capability, workflow design, leadership alignment or managed capacity."/>
         <p><strong>Email</strong><br/><a className="text-link" href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></p>

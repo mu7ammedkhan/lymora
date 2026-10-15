@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Breadcrumbs, CTA, SectionHeading } from "@/components/UI";
+import { CTA, SectionHeading, PageHero, Button } from "@/components/UI";
 import { JsonLd } from "@/components/JsonLd";
 import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
 
@@ -7,7 +7,7 @@ export const metadata = pageMetadata({title:"AI Academy Dubai | Professional and
 
 export default function AcademyPage(){return <>
   <JsonLd data={breadcrumbSchema([{name:"Home",path:"/"},{name:"Lymora Academy",path:"/academy"}])}/>
-  <section className="page-hero"><div className="container"><Breadcrumbs items={[{label:"Home",href:"/"},{label:"Academy"}]}/><span className="eyebrow">Lymora Academy</span><h1>AI capability is now a workforce standard.</h1><p>Build professionals, teams and leaders who can turn artificial intelligence into responsible, observable workplace performance.</p></div></section>
+  <PageHero media="academy" crumbs={[{label:"Home",href:"/"},{label:"Academy"}]} eyebrow="Lymora Academy" title="AI capability is now a *workforce standard.*" text="Build professionals, teams and leaders who can turn artificial intelligence into responsible, observable workplace performance."><Button href="/caio">Explore CAIO™ certification</Button></PageHero>
   <section><div className="container"><SectionHeading eyebrow="Learning pathways" title="Capability for every level of the AI-enabled workforce." text="Programmes connect foundational literacy, professional operation, leadership, team implementation and role specialisation."/><div className="cards-3">{[
     ["CAIO™ Certification","Professionals, jobseekers and internal AI champions","Design and operate responsible AI-enabled workflows.","/caio"],
     ["Team AI Enablement","Departments and organisation teams","Shared capability, workflow playbook and implementation plan.","/academy/team-ai-enablement"],

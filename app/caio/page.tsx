@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CaioApplicationForm } from "@/components/CaioApplicationForm";
-import { Breadcrumbs, FAQ } from "@/components/UI";
+import { Button, FAQ, PageHero } from "@/components/UI";
 import { JsonLd } from "@/components/JsonLd";
 import { breadcrumbSchema, courseSchema, faqSchema, pageMetadata } from "@/lib/seo";
 
@@ -48,22 +48,17 @@ export default function CaioLandingPage() {
     <>
       <JsonLd data={[courseSchema(), faqSchema(faq), breadcrumbSchema([{ name: "Home", path: "/" }, { name: "Academy", path: "/academy" }, { name: "CAIO™", path: "/caio" }])]} />
 
-      <div className="caio-announcement">Founding Cohort Applications Open <span>•</span> 12 Seats <span>•</span> Selective Admission</div>
-
-      <section className="caio-hero">
-        <div className="container caio-hero-inner">
-          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Academy", href: "/academy" }, { label: "CAIO™" }]} />
-          <p className="caio-brand-label">Lymora Academy</p>
-          <h1>Become a Certified{" "}<br/><em>AI Operator.</em></h1>
-          <p className="caio-hero-lead">Become the professional who can turn AI into reliable, responsible and measurable business results.</p>
-          <div className="hero-actions">
-            <Link href="#application" className="button" data-event="caio_apply_hero">Apply for Eligibility <span>↗</span></Link>
-            <Link href="#programme" className="bare-link">View the Programme <span>↓</span></Link>
-          </div>
-          <div className="caio-trust-line"><span>5 weeks</span><span>36 hours</span><span>Live and applied</span><span>Professional assessment</span></div>
-          <p className="caio-eligibility-note">Applications are reviewed individually. Admission is not automatic.</p>
-        </div>
-      </section>
+      <PageHero
+        media="academy"
+        crumbs={[{ label: "Home", href: "/" }, { label: "Academy", href: "/academy" }, { label: "CAIO™" }]}
+        eyebrow="Founding cohort · 12 seats · Selective admission"
+        title="Become a Certified *AI Operator.*"
+        text="Become the professional who can turn AI into reliable, responsible and measurable business results. Applications are reviewed individually."
+        meta={["5 weeks", "36 hours", "Live and applied", "Professional assessment"]}
+      >
+        <Button href="#application">Apply for eligibility</Button>
+        <Button href="#programme" variant="ghost" icon="↓">View the programme</Button>
+      </PageHero>
 
       <section className="caio-shift">
         <div className="container caio-shift-grid">

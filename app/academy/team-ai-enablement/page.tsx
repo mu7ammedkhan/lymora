@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { JsonLd } from "@/components/JsonLd";
-import { Breadcrumbs, CTA, FAQ, SectionHeading } from "@/components/UI";
+import { CTA, FAQ, SectionHeading, PageHero, Button } from "@/components/UI";
 import { breadcrumbSchema, faqSchema, pageMetadata, serviceSchema } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -65,28 +65,19 @@ export default function TeamPage() {
         ]}
       />
 
-      <section className="page-hero">
-        <div className="container">
-          <Breadcrumbs
-            items={[
-              { label: "Home", href: "/" },
-              { label: "Academy", href: "/academy" },
-              { label: "Team AI Enablement" }
-            ]}
-          />
-          <span className="eyebrow">Corporate AI training in Dubai</span>
-          <h1>Move your team from AI awareness to operational capability.</h1>
-          <p>
-            Build shared skills, role-specific workflows and responsible operating standards through a practical
-            programme designed around your organisation.
-          </p>
-          <div className="hero-actions">
-            <Link href="/contact?interest=team-enablement" className="button">
-              Request a team proposal
-            </Link>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        media="academy"
+        crumbs={[
+          { label: "Home", href: "/" },
+          { label: "Academy", href: "/academy" },
+          { label: "Team AI Enablement" }
+        ]}
+        eyebrow="Corporate AI training in Dubai"
+        title="Move your team from AI awareness to *operational capability.*"
+        text="Build shared skills, role-specific workflows and responsible operating standards through a practical programme designed around your organisation."
+      >
+        <Button href="/contact?interest=team-enablement">Request a team proposal</Button>
+      </PageHero>
 
       <section>
         <div className="container">

@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Breadcrumbs, CTA, SectionHeading } from "@/components/UI";
+import { CTA, SectionHeading, PageHero, Button } from "@/components/UI";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -10,13 +9,7 @@ export const metadata = pageMetadata({
 
 export default function ProfessionalsPage() {
   return <>
-    <section className="page-hero"><div className="container">
-      <Breadcrumbs items={[{label:"Home",href:"/"},{label:"For Professionals"}]}/>
-      <span className="eyebrow">For professionals and jobseekers</span>
-      <h1>Become impossible to overlook in the AI-enabled workplace.</h1>
-      <p>Move beyond basic prompting. Build evidence that you can design workflows, verify outputs, manage risk and create measurable improvement.</p>
-      <div className="hero-actions"><Link href="/caio" className="button">Build the capability</Link></div>
-    </div></section>
+    <PageHero media="academy" crumbs={[{label:"Home",href:"/"},{label:"For Professionals"}]} eyebrow="For professionals and jobseekers" title="Become *impossible to overlook* in the AI-enabled workplace." text="Move beyond basic prompting. Build evidence that you can design workflows, verify outputs, manage risk and create measurable improvement."><Button href="/caio">Build the capability</Button></PageHero>
     <section><div className="container">
       <SectionHeading eyebrow="Professional value" title="Capability employers can observe." text="The strongest signal is not that you completed a course. It is that you can improve real work responsibly."/>
       <div className="cards-3">
